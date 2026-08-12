@@ -26,8 +26,8 @@ export default function SiteDetail() {
     load()
   }, [siteId, router])
 
-  if (loading) return <p className="p-6 text-neutral-500 text-sm">Loading...</p>
-  if (!site) return <p className="p-6 text-neutral-500 text-sm">Site not found</p>
+  if (loading) return <p className="p-6 text-stone-500 text-sm">Loading...</p>
+  if (!site) return <p className="p-6 text-stone-500 text-sm">Site not found</p>
 
   const totalViews = pageviews.length
   const viewsByDay = {}
@@ -48,53 +48,71 @@ export default function SiteDetail() {
   })
   const topReferrers = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
 
-  return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-3xl mx-auto p-6">
-        <button onClick={() => router.push('/dashboard')} className="text-sm text-neutral-500 hover:text-indigo-600 mb-4">← Back</button>
-        <h1 className="text-xl font-semibold text-neutral-900">{site.name}</h1>
-        <p className="text-neutral-500 text-sm mb-6">{site.domain}</p>
+  const deviceCounts = {}
+  pageviews.forEach((pv) => {
+    const device = pv.device_type || 'Unknown'
+    deviceCounts[device] = (deviceCounts[device] || 0) + 1
+  })
+  const topDevices = Object.entries(deviceCounts).sort((a, b) => b[1] - a[1])
 
-        <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 mb-4">
-          <p className="text-4xl font-mono font-bold text-indigo-600">{totalViews}</p>
-          <p className="text-sm text-neutral-500 mt-1">Total pageviews</p>
+  return (
+    <div className="min-h-screen bg-dotted">
+      <div className="max-w-3xl mx-auto p-6">
+        <button onClick={() => router.push('/dashboard')} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors mb-4">← Back</button>
+        <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{site.name}</h1>
+        <p className="text-stone-500 text-sm mb-6">{site.domain}</p>
+
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4">
+          <p className="text-4xl font-mono font-bold text-[#1F6F5C]">{totalViews}</p>
+          <p className="text-sm text-stone-500 mt-1">Total pageviews</p>
         </div>
 
         {chartData.length > 0 && (
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 mb-4" style={{ height: 260 }}>
+          <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4" style={{ height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                <XAxis dataKey="date" fontSize={12} stroke="#a3a3a3" />
-                <YAxis allowDecimals={false} fontSize={12} stroke="#a3a3a3" />
-                <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e5e5', fontSize: 13 }} />
-                <Line type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={2} dot={{ fill: '#4f46e5', r: 3 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E0" />
+                <XAxis dataKey="date" fontSize={12} stroke="#a8a29e" />
+                <YAxis allowDecimals={false} fontSize={12} stroke="#a8a29e" />
+                <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E7E5E0', fontSize: 13 }} />
+                <Line type="monotone" dataKey="count" stroke="#1F6F5C" strokeWidth={2} dot={{ fill: '#1F6F5C', r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5">
-            <h2 className="font-medium text-neutral-900 mb-3 text-sm">Top Pages</h2>
-            {topPages.length === 0 && <p className="text-sm text-neutral-400">No data yet</p>}
+          <div className="bg-white border border-stone-200 rounded-2xl p-5">
+            <h2 className="font-medium text-stone-900 mb-3 text-sm">Top Pages</h2>
+            {topPages.length === 0 && <p className="text-sm text-stone-400">No data yet</p>}
             {topPages.map(([page, count]) => (
-              <div key={page} className="flex justify-between text-sm py-1.5 border-t border-neutral-100 first:border-0">
-                <span className="truncate text-neutral-700">{page}</span>
-                <span className="text-neutral-400 font-mono">{count}</span>
+              <div key={page} className="flex justify-between text-sm py-1.5 border-t border-stone-100 first:border-0">
+                <span className="truncate text-stone-700">{page}</span>
+                <span className="text-stone-400 font-mono">{count}</span>
               </div>
             ))}
           </div>
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5">
-            <h2 className="font-medium text-neutral-900 mb-3 text-sm">Top Referrers</h2>
-            {topReferrers.length === 0 && <p className="text-sm text-neutral-400">No data yet</p>}
+          <div className="bg-white border border-stone-200 rounded-2xl p-5">
+            <h2 className="font-medium text-stone-900 mb-3 text-sm">Top Referrers</h2>
+            {topReferrers.length === 0 && <p className="text-sm text-stone-400">No data yet</p>}
             {topReferrers.map(([ref, count]) => (
-              <div key={ref} className="flex justify-between text-sm py-1.5 border-t border-neutral-100 first:border-0">
-                <span className="truncate text-neutral-700">{ref}</span>
-                <span className="text-neutral-400 font-mono">{count}</span>
+              <div key={ref} className="flex justify-between text-sm py-1.5 border-t border-stone-100 first:border-0">
+                <span className="truncate text-stone-700">{ref}</span>
+                <span className="text-stone-400 font-mono">{count}</span>
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="bg-white border border-stone-200 rounded-2xl p-5 mt-4">
+          <h2 className="font-medium text-stone-900 mb-3 text-sm">Devices</h2>
+          {topDevices.length === 0 && <p className="text-sm text-stone-400">No data yet</p>}
+          {topDevices.map(([device, count]) => (
+            <div key={device} className="flex justify-between text-sm py-1.5 border-t border-stone-100 first:border-0">
+              <span className="text-stone-700">{device}</span>
+              <span className="text-stone-400 font-mono">{count}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

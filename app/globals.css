@@ -21,3 +21,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.bg-dotted {
+  background-color: #FAFAF8;
+  background-image: radial-gradient(circle, #E7E5E0 1px, transparent 1px);
+  background-size: 22px 22px;
+}
