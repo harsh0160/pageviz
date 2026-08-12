@@ -11,7 +11,7 @@ export default function Home() {
     supabase.auth.getUser().then(({ data }) => {
       router.push(data.user ? '/dashboard' : '/login')
     })
-  }, [])
+  }, [router])
 
   return <p className="p-6 text-neutral-500 text-sm">Loading...</p>
 }
