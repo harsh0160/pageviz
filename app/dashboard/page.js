@@ -18,9 +18,10 @@ export default function Dashboard() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/login')
+      // eslint-disable-next-line react-hooks/immutability
       else { setUser(data.user); loadSites(data.user.id) }
     })
-  }, [])
+  }, [router])
 
   const loadSites = async (userId) => {
     const { data } = await supabase.from('sites').select('*').eq('user_id', userId).order('created_at', { ascending: false })
@@ -76,7 +77,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <p className="font-semibold text-stone-900">You've hit the free plan limit</p>
+            <p className="font-semibold text-stone-900">You&apos;ve hit the free plan limit</p>
             <p className="text-sm text-stone-500 mt-1 mb-4">Free plan includes {FREE_SITE_LIMIT} site. Upgrade to track more sites.</p>
             <button disabled className="bg-[#1F6F5C] text-white text-sm font-medium rounded-lg px-5 py-2 opacity-50 cursor-not-allowed">
               Upgrade — coming soon

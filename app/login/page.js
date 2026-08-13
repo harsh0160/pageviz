@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -8,6 +8,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (typeof window !== 'undefined' && window.location.search.includes('signup')) setIsSignUp(true)
+  }, [])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -29,11 +33,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
           <svg width="26" height="19" viewBox="0 0 28 20" fill="none">
-            <polyline points="2,16 10,10 18,12 26,3" stroke="#1F6F5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            <circle cx="2" cy="16" r="2.5" fill="#1F6F5C"/>
-            <circle cx="10" cy="10" r="2.5" fill="#1F6F5C"/>
-            <circle cx="18" cy="12" r="2.5" fill="#1F6F5C"/>
-            <circle cx="26" cy="3" r="2.5" fill="#1F6F5C"/>
+            <polyline points="2,16 10,10 18,12 26,3" stroke="#1F6F5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <circle cx="2" cy="16" r="2.5" fill="#1F6F5C" />
+            <circle cx="10" cy="10" r="2.5" fill="#1F6F5C" />
+            <circle cx="18" cy="12" r="2.5" fill="#1F6F5C" />
+            <circle cx="26" cy="3" r="2.5" fill="#1F6F5C" />
           </svg>
           <span className="font-semibold text-lg text-stone-900 tracking-tight">pageviz</span>
         </div>
