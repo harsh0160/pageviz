@@ -5,26 +5,57 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
+const RANGES = [
+  { label: '7D', days: 7 },
+  { label: '30D', days: 30 },
+  { label: '90D', days: 90 },
+]
+
 export default function SiteDetail() {
   const [site, setSite] = useState(null)
   const [pageviews, setPageviews] = useState([])
   const [loading, setLoading] = useState(true)
+  const [range, setRange] = useState(7)
+  const [copied, setCopied] = useState(false)
   const router = useRouter()
   const params = useParams()
   const siteId = params.siteId
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       const { data: siteData } = await supabase.from('sites').select('*').eq('id', siteId).single()
       setSite(siteData)
-      const { data: pvData } = await supabase.from('pageviews').select('*').eq('site_id', siteId).order('created_at', { ascending: true })
+
+      const since = new Date()
+      since.setDate(since.getDate() - range)
+
+      const { data: pvData } = await supabase
+        .from('pageviews')
+        .select('*')
+        .eq('site_id', siteId)
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: true })
       setPageviews(pvData || [])
       setLoading(false)
     }
     load()
-  }, [siteId, router])
+  }, [siteId, router, range])
+
+  const togglePublic = async () => {
+    const newValue = !site.public_enabled
+    const { error } = await supabase.from('sites').update({ public_enabled: newValue }).eq('id', siteId)
+    if (!error) setSite({ ...site, public_enabled: newValue })
+  }
+
+  const copyLink = () => {
+    const url = `${window.location.origin}/share/${siteId}`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   if (loading) return <p className="p-6 text-stone-500 text-sm">Loading...</p>
   if (!site) return <p className="p-6 text-stone-500 text-sm">Site not found</p>
@@ -56,15 +87,61 @@ export default function SiteDetail() {
   const topDevices = Object.entries(deviceCounts).sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="min-h-screen bg-dotted">
+    <div className="min-h-screen bg-stone-50">
       <div className="max-w-3xl mx-auto p-6">
         <button onClick={() => router.push('/dashboard')} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors mb-4">← Back</button>
-        <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{site.name}</h1>
-        <p className="text-stone-500 text-sm mb-6">{site.domain}</p>
+
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{site.name}</h1>
+            <p className="text-stone-500 text-sm">{site.domain}</p>
+          </div>
+          <div className="flex bg-white border border-stone-200 rounded-lg p-1">
+            {RANGES.map((r) => (
+              <button
+                key={r.days}
+                onClick={() => setRange(r.days)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  range === r.days ? 'bg-[#1F6F5C] text-white' : 'text-stone-500 hover:text-stone-900'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-stone-900">Public dashboard</p>
+            <p className="text-xs text-stone-500">Anyone with the link can view stats — no login needed</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {site.public_enabled && (
+              <button onClick={copyLink} className="text-xs font-medium text-[#1F6F5C] border border-[#1F6F5C] rounded-lg px-3 py-1.5 hover:bg-[#1F6F5C] hover:text-white transition-colors">
+                {copied ? 'Copied!' : 'Copy link'}
+              </button>
+            )}
+            <button
+              onClick={togglePublic}
+              className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 ${site.public_enabled ? 'bg-[#1F6F5C] justify-end' : 'bg-stone-300 justify-start'}`}
+            >
+              <span className="w-5 h-5 bg-white rounded-full shadow-sm" />
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-4">
+          <p className="text-sm font-medium text-stone-900">Exclude your own visits</p>
+          <p className="text-xs text-stone-500 mt-1 mb-2">Open this link once in your browser — your visits won&apos;t be tracked after that.</p>
+          <code className="block bg-stone-50 border border-stone-200 text-xs font-mono p-2.5 rounded-lg overflow-x-auto text-stone-700">
+            {`https://${site.domain}?pv_exclude=1`}
+          </code>
+        </div>
 
         <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4">
           <p className="text-4xl font-mono font-bold text-[#1F6F5C]">{totalViews}</p>
-          <p className="text-sm text-stone-500 mt-1">Total pageviews</p>
+          <p className="text-sm text-stone-500 mt-1">Pageviews — last {range} days</p>
         </div>
 
         {chartData.length > 0 && (
