@@ -60,7 +60,10 @@ export default function Dashboard() {
             </svg>
             <span className="font-semibold text-stone-900 tracking-tight">pageviz</span>
           </div>
-          <button onClick={handleLogout} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Log out</button>
+          <div className="flex items-center gap-5">
+            <Link href="/pricing" className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Pricing</Link>
+            <button onClick={handleLogout} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Log out</button>
+          </div>
         </div>
       </div>
 
