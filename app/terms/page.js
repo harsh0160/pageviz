@@ -52,7 +52,7 @@ export default function TermsPage() {
         <p className="text-xs tracking-wide text-[#5C6E65] mb-3" style={monoFont}>LAST UPDATED: AUGUST 26, 2026</p>
         <h1 className="text-4xl font-bold text-[#13221D] mb-8" style={displayFont}>Terms of Service</h1>
 
-        <P>These Terms of Service (&quot;Terms&quot;) govern your access to and use of PageViz (&quot;PageViz&quot;, &quot;we&quot;, &quot;us&quot;), a privacy-first website analytics service operated by <strong>[YOUR LEGAL NAME]</strong>. By creating an account or using PageViz, you agree to these Terms. If you don&apos;t agree, please don&apos;t use the service.</P>
+        <P>These Terms of Service (&quot;Terms&quot;) govern your access to and use of PageViz (&quot;PageViz&quot;, &quot;we&quot;, &quot;us&quot;), a privacy-first website analytics service. By creating an account or using PageViz, you agree to these Terms. If you don&apos;t agree, please don&apos;t use the service.</P>
 
         <H2>1. The Service</H2>
         <P>PageViz lets you add a lightweight tracking script to your website and view visitor analytics — pageviews, referrers, top pages, and device breakdowns — in a dashboard. PageViz is designed not to use cookies or collect personal identifiers from your site&apos;s visitors; see our <Link href="/privacy" className="text-[#1F4A3D] font-medium underline">Privacy Policy</Link> for exactly what is and isn&apos;t collected.</P>
@@ -87,10 +87,10 @@ export default function TermsPage() {
         <P>We may update these Terms occasionally. If we make material changes, we&apos;ll let you know by email or through the dashboard before they take effect.</P>
 
         <H2>11. Governing Law</H2>
-        <P>These Terms are governed by the laws of <strong>[YOUR COUNTRY / STATE]</strong>, without regard to conflict-of-law principles.</P>
+        <P>These Terms are governed by the laws of <strong>India</strong>, without regard to conflict-of-law principles.</P>
 
         <H2>12. Contact</H2>
-        <P>Questions about these Terms? Reach us at <strong>[YOUR SUPPORT EMAIL]</strong>.</P>
+        <P>Questions about these Terms? Reach us at <strong>pagevizofficial@gmail.com</strong>.</P>
       </main>
       <LegalFooter />
     </div>

@@ -91,7 +91,7 @@ export default function PrivacyPage() {
         <P>None of these providers are permitted to use your data for their own purposes.</P>
 
         <H2>7. Your Rights</H2>
-        <P>Depending on where you&apos;re located (including under GDPR in the EU/UK, or CCPA in California), you may have the right to access, correct, export, or delete your personal information. To make a request, contact us at <strong>[YOUR SUPPORT EMAIL]</strong>.</P>
+        <P>Depending on where you&apos;re located (including under GDPR in the EU/UK, or CCPA in California), you may have the right to access, correct, export, or delete your personal information. To make a request, contact us at <strong>pagevizofficial@gmail.com</strong>.</P>
 
         <H2>8. Data Security</H2>
         <P>Data is encrypted in transit (HTTPS) and stored with our infrastructure providers, who maintain their own industry-standard security certifications. No method of transmission or storage is 100% secure, but we work to protect your information appropriately.</P>
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
         <P>If we make material changes to this policy, we&apos;ll notify you by email or through the dashboard before they take effect.</P>
 
         <H2>11. Contact</H2>
-        <P>Questions about this policy or your data? Reach us at <strong>[YOUR SUPPORT EMAIL]</strong>.</P>
+        <P>Questions about this policy or your data? Reach us at <strong>pagevizofficial@gmail.com</strong>.</P>
       </main>
       <LegalFooter />
     </div>

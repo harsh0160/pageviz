@@ -67,13 +67,13 @@ export default function RefundPage() {
         <P>Regardless of the above, we&apos;ll always refund a duplicate or accidental charge, a charge that wasn&apos;t authorized by the account holder, or a payment for a period where a technical fault on our end genuinely prevented you from using the service.</P>
 
         <H2>5. How to Request a Refund</H2>
-        <P>Email us at <strong>[YOUR SUPPORT EMAIL]</strong> with the email address on your account and the reason for your request. You can also raise a request directly from the receipt/invoice email Paddle sends you at checkout.</P>
+        <P>Email us at <strong>pagevizofficial@gmail.com</strong> with the email address on your account and the reason for your request. You can also raise a request directly from the receipt/invoice email Paddle sends you at checkout.</P>
 
         <H2>6. Processing Time</H2>
         <P>Once a refund is approved, Paddle typically processes it within a few business days; it may take a little longer to appear on your bank or card statement, depending on your bank.</P>
 
         <H2>7. Contact</H2>
-        <P>Questions about this policy? Reach us at <strong>[YOUR SUPPORT EMAIL]</strong>.</P>
+        <P>Questions about this policy? Reach us at <strong>pagevizofficial@gmail.com</strong>.</P>
       </main>
       <LegalFooter />
     </div>
