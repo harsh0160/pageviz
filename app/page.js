@@ -147,7 +147,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-[#E4E7E1]">
+      <section id="pricing" className="py-20 border-t border-[#E4E7E1]">
         <div className="max-w-5xl mx-auto px-7">
           <div className="max-w-xl mb-11">
             <span className="block text-xs tracking-wide text-[#E64A12] uppercase font-medium mb-3" style={monoFont}>how it works</span>
@@ -279,9 +279,10 @@ export default function Home() {
               <a href="#" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">FAQ</a>
             </div>
             <div>
-              <h4 className="text-xs uppercase tracking-wide text-[#5C6E65] mb-4" style={monoFont}>Legal</h4>
-              <a href="#" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">Privacy</a>
-              <a href="#" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">Terms</a>
+<h4 className="text-xs uppercase tracking-wide text-[#5C6E65] mb-4" style={monoFont}>Legal</h4>
+<Link href="/privacy" target="_blank" rel="noopener noreferrer" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">Privacy</Link>
+<Link href="/terms" target="_blank" rel="noopener noreferrer" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">Terms</Link>
+<Link href="/refund" target="_blank" rel="noopener noreferrer" className="block text-sm mb-2.5 text-[#13221D] hover:text-[#E64A12]">Refund Policy</Link>
             </div>
           </div>
           <div className="border-t border-[#E4E7E1] pt-6 flex flex-wrap justify-between gap-2.5 items-center">
