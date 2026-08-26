@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CheckoutButton from './CheckoutButton'
 
 export const metadata = {
   title: 'Pricing — PageViz',
@@ -10,7 +11,7 @@ const monoFont = { fontFamily: 'var(--font-mono-data)' }
 
 function Check() {
   return (
-    <svg className="w-[17px] h-[17px] text-[#1F4A3D] mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-4.25 h-4.25 text-[#1F4A3D] mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M20 6L9 17l-5-5" />
     </svg>
   )
@@ -31,7 +32,7 @@ const plans = [
     sub: 'For production sites and growing projects.',
     featured: true,
     features: ['Unlimited sites', '1-year history', 'CSV export', 'Priority email support'],
-    cta: { label: 'Upgrade — coming soon', href: null, style: 'primary' },
+    cta: { label: 'Upgrade to Pro', checkoutPlan: 'pro', style: 'primary' },
   },
   {
     name: 'Business',
@@ -39,7 +40,7 @@ const plans = [
     period: '/month',
     sub: 'For teams running several properties.',
     features: ['Everything in Pro', 'Multi-site combined dashboard', '2-year history', 'Priority support & onboarding help'],
-    cta: { label: 'Upgrade — coming soon', href: null, style: 'outline' },
+    cta: { label: 'Upgrade to Business', checkoutPlan: 'business', style: 'outline' },
   },
 ]
 
@@ -97,7 +98,18 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              {plan.cta.href ? (
+              {plan.cta.checkoutPlan ? (
+                <CheckoutButton
+                  plan={plan.cta.checkoutPlan}
+                  className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 transition-colors ${
+                    plan.cta.style === 'primary'
+                      ? 'text-white bg-[#E64A12] hover:bg-[#13221D]'
+                      : 'text-[#1F4A3D] border-[1.5px] border-[#1F4A3D] hover:bg-[#1F4A3D] hover:text-white'
+                  }`}
+                >
+                  {plan.cta.label}
+                </CheckoutButton>
+              ) : (
                 <Link
                   href={plan.cta.href}
                   className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 transition-colors ${
@@ -108,17 +120,6 @@ export default function PricingPage() {
                 >
                   {plan.cta.label}
                 </Link>
-              ) : (
-                <button
-                  disabled
-                  className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 opacity-50 cursor-not-allowed ${
-                    plan.cta.style === 'primary'
-                      ? 'text-white bg-[#E64A12]'
-                      : 'text-[#1F4A3D] border-[1.5px] border-[#1F4A3D]'
-                  }`}
-                >
-                  {plan.cta.label}
-                </button>
               )}
             </div>
           ))}
