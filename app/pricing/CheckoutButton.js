@@ -1,43 +1,59 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-// Sandbox price IDs — swap for live pri_ IDs once verification is approved
-const PRICE_IDS = {
-  pro: 'pri_01m0x6qar386c4snh3xpfez5cg',
-  business: 'pri_01m0x6sd5jqb660zm4eka60zw3',
-}
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { loadPaddle } from '@/lib/paddle-loader'
+import { PLAN_TO_PRICE } from '@/lib/paddle-prices'
 
 export default function CheckoutButton({ plan, className, children }) {
-  const [ready, setReady] = useState(false)
+  // 'loading' | 'ready' | 'error' — 'error' lets the button offer a retry
+  // instead of being stuck on "Loading…" forever if the script/init fails.
+  const [status, setStatus] = useState('loading')
+  const router = useRouter()
 
   useEffect(() => {
-    if (window.Paddle) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setReady(true)
-      return
+    let cancelled = false
+    const attempt = () => {
+      loadPaddle()
+        .then(() => { if (!cancelled) setStatus('ready') })
+        .catch(() => { if (!cancelled) setStatus('error') })
     }
-    const script = document.createElement('script')
-    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
-    script.onload = () => {
-      window.Paddle.Environment.set('sandbox')
-      window.Paddle.Initialize({ token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN })
-      setReady(true)
-    }
-    document.body.appendChild(script)
+    attempt()
+    return () => { cancelled = true }
   }, [])
 
-  const openCheckout = () => {
-    if (!ready) return
+  const handleClick = async () => {
+    if (status === 'loading') return
+
+    if (status === 'error') {
+      setStatus('loading')
+      loadPaddle()
+        .then(() => setStatus('ready'))
+        .catch(() => setStatus('error'))
+      return
+    }
+
+    // Must know WHO is paying before opening checkout, otherwise a successful
+    // payment has no Supabase user to attach the plan to on the webhook side.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/login?signup=1')
+      return
+    }
+
     window.Paddle.Checkout.open({
-      items: [{ priceId: PRICE_IDS[plan], quantity: 1 }],
+      items: [{ priceId: PLAN_TO_PRICE[plan], quantity: 1 }],
+      customData: { user_id: user.id },
       settings: { displayMode: 'overlay', variant: 'one-page' },
     })
   }
 
+  const label = status === 'ready' ? children : status === 'error' ? 'Try again' : 'Loading…'
+
   return (
-    <button onClick={openCheckout} disabled={!ready} className={className}>
-      {ready ? children : 'Loading…'}
+    <button onClick={handleClick} disabled={status === 'loading'} className={className}>
+      {label}
     </button>
   )
 }

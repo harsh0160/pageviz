@@ -10,6 +10,7 @@ const FREE_SITE_LIMIT = 1
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [sites, setSites] = useState([])
+  const [plan, setPlan] = useState('free')
   const [name, setName] = useState('')
   const [domain, setDomain] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,7 +20,7 @@ export default function Dashboard() {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/login')
       // eslint-disable-next-line react-hooks/immutability
-      else { setUser(data.user); loadSites(data.user.id) }
+      else { setUser(data.user); loadSites(data.user.id); loadPlan(data.user.id) }
     })
   }, [router])
 
@@ -28,9 +29,19 @@ export default function Dashboard() {
     setSites(data || [])
   }
 
+  const loadPlan = async (userId) => {
+    // No row in profiles yet just means "never paid" — that's the normal
+    // state for most users, not an error, so default to free rather than
+    // showing a loading/error state over it.
+    const { data } = await supabase.from('profiles').select('plan').eq('id', userId).maybeSingle()
+    setPlan(data?.plan || 'free')
+  }
+
+  const siteLimit = plan === 'free' ? FREE_SITE_LIMIT : Infinity
+
   const handleAddSite = async (e) => {
     e.preventDefault()
-    if (sites.length >= FREE_SITE_LIMIT) return
+    if (sites.length >= siteLimit) return
     setLoading(true)
     const { error } = await supabase.from('sites').insert({ user_id: user.id, name, domain })
     setLoading(false)
@@ -44,7 +55,7 @@ export default function Dashboard() {
 
   if (!user) return <p className="p-6 text-stone-500 text-sm">Loading...</p>
 
-  const limitReached = sites.length >= FREE_SITE_LIMIT
+  const limitReached = sites.length >= siteLimit
 
   return (
     <div className="min-h-screen bg-dotted">
@@ -82,9 +93,9 @@ export default function Dashboard() {
             </div>
             <p className="font-semibold text-stone-900">You&apos;ve hit the free plan limit</p>
             <p className="text-sm text-stone-500 mt-1 mb-4">Free plan includes {FREE_SITE_LIMIT} site. Upgrade to track more sites.</p>
-            <button disabled className="bg-[#1F6F5C] text-white text-sm font-medium rounded-lg px-5 py-2 opacity-50 cursor-not-allowed">
-              Upgrade — coming soon
-            </button>
+            <Link href="/pricing" className="inline-block bg-[#1F6F5C] hover:bg-[#195C4C] text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors">
+              Upgrade
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleAddSite} className="bg-white border border-stone-200 rounded-2xl p-5 mb-6 space-y-3">
