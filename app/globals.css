@@ -1,25 +1,24 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* FIX: this whole file was still the create-next-app starter boilerplate
+   (--font-geist-sans, dark-mode auto-switch) left over from before the real
+   fonts were wired up in layout.js. body{font-family:Arial...} below was
+   overriding the actual Comfortaa/Inter fonts for every element that didn't
+   have an explicit inline style override -- that's the root cause of the
+   "nav/hero/footer text renders in a fallback font" issue. */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono-data);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), sans-serif;
 }
 
 .bg-dotted {

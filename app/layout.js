@@ -1,7 +1,7 @@
-import { Bricolage_Grotesque, Inter, IBM_Plex_Mono } from 'next/font/google'
+import { Comfortaa, Inter, IBM_Plex_Mono } from 'next/font/google'
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
+const comfortaa = Comfortaa({
   subsets: ["latin"],
   weight: ["500", "700"],
   variable: "--font-display",
@@ -20,13 +20,13 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata = {
-  title: "pageviz",
+  title: "Pageviz",
   description: "Every visit, one clean signal.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${inter.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${comfortaa.variable} ${inter.variable} ${plexMono.variable}`}>
       <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>

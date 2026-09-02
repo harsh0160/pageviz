@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy — PageViz',
-  description: 'Privacy Policy for PageViz.',
+  title: 'Privacy Policy — Pageviz',
+  description: 'Privacy Policy for Pageviz.',
 }
 
 const displayFont = { fontFamily: 'var(--font-display)' }
@@ -16,7 +16,7 @@ function LegalNav() {
           <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
             <polyline points="1,13 7,13 9,4 12,15 14,9 16,9 18,3 20,13 25,13" stroke="#1F4A3D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          PageViz
+          Pageviz
         </Link>
         <div className="flex items-center gap-5 text-sm">
           <Link href="/terms" className="text-[#5C6E65] hover:text-[#13221D] transition-colors">Terms</Link>
@@ -55,13 +55,13 @@ export default function PrivacyPage() {
         <p className="text-xs tracking-wide text-[#5C6E65] mb-3" style={monoFont}>LAST UPDATED: AUGUST 26, 2026</p>
         <h1 className="text-4xl font-bold text-[#13221D] mb-8" style={displayFont}>Privacy Policy</h1>
 
-        <P>PageViz was built to be a privacy-first alternative to invasive analytics tools. This policy explains exactly what we collect, from whom, and why — for both people who sign up for a PageViz account, and visitors to websites that use PageViz.</P>
+        <P>Pageviz was built to be a privacy-first alternative to invasive analytics tools. This policy explains exactly what we collect, from whom, and why — for both people who sign up for a Pageviz account, and visitors to websites that use Pageviz.</P>
 
         <H2>1. Information From Site Owners (You)</H2>
-        <P>When you create a PageViz account, we collect your email address and an authentication credential (handled securely through our authentication provider). If you subscribe to a paid plan, billing is handled entirely by Paddle, our payment processor — PageViz never sees or stores your card details.</P>
+        <P>When you create a Pageviz account, we collect your email address and an authentication credential (handled securely through our authentication provider). If you subscribe to a paid plan, billing is handled entirely by Paddle, our payment processor — Pageviz never sees or stores your card details.</P>
 
         <H2>2. Information From Your Website&apos;s Visitors</H2>
-        <P>The PageViz tracking script does <strong>not</strong> use cookies, does not assign persistent identifiers, and does not build cross-site visitor profiles. For each page view, it sends us only:</P>
+        <P>The Pageviz tracking script does <strong>not</strong> use cookies, does not assign persistent identifiers, and does not build cross-site visitor profiles. For each page view, it sends us only:</P>
         <ul className="list-disc pl-6 mb-4">
           <Li>The page URL visited</Li>
           <Li>The referring URL, if any</Li>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
         <P>We do not collect names, email addresses, exact locations, or any other information that identifies an individual visitor.</P>
 
         <H2>3. Cookies</H2>
-        <P>The tracking script placed on your website sets no cookies. Separately, if you (the site owner) log in to your own PageViz dashboard, our authentication system may use a minimal session cookie or token to keep you signed in — this only applies to your own account login, never to your website&apos;s visitors.</P>
+        <P>The tracking script placed on your website sets no cookies. Separately, if you (the site owner) log in to your own Pageviz dashboard, our authentication system may use a minimal session cookie or token to keep you signed in — this only applies to your own account login, never to your website&apos;s visitors.</P>
 
         <H2>4. How We Use This Information</H2>
         <P>We use the data above to generate your analytics dashboard, to operate and secure the service, to process billing, and to communicate important account or service updates to you. We do not sell data to advertisers or third parties.</P>
@@ -81,10 +81,10 @@ export default function PrivacyPage() {
         <P>On the Free plan, pageview data is retained for 7 days. On paid plans, it&apos;s retained for up to 1 year. Account information is kept until you delete your account, after which associated data is removed within 30 days.</P>
 
         <H2>6. Who We Share Data With</H2>
-        <P>We use a small number of trusted service providers to run PageViz:</P>
+        <P>We use a small number of trusted service providers to run Pageviz:</P>
         <ul className="list-disc pl-6 mb-4">
           <Li><strong>Supabase</strong> — hosts our database and handles account authentication</Li>
-          <Li><strong>Netlify</strong> — hosts the PageViz application</Li>
+          <Li><strong>Netlify</strong> — hosts the Pageviz application</Li>
           <Li><strong>Paddle</strong> — processes payments and acts as Merchant of Record for subscriptions</Li>
           <Li><strong>UptimeRobot</strong> — periodically pings our service to monitor uptime; it does not receive visitor analytics data</Li>
         </ul>
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
         <P>Data is encrypted in transit (HTTPS) and stored with our infrastructure providers, who maintain their own industry-standard security certifications. No method of transmission or storage is 100% secure, but we work to protect your information appropriately.</P>
 
         <H2>9. Children&apos;s Privacy</H2>
-        <P>PageViz is not directed at children, and we do not knowingly collect personal information from children under 13 (or the relevant age of digital consent in your region).</P>
+        <P>Pageviz is not directed at children, and we do not knowingly collect personal information from children under 13 (or the relevant age of digital consent in your region).</P>
 
         <H2>10. Changes to This Policy</H2>
         <P>If we make material changes to this policy, we&apos;ll notify you by email or through the dashboard before they take effect.</P>

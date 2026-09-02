@@ -39,7 +39,7 @@ export default function LoginPage() {
             <circle cx="18" cy="12" r="2.5" fill="#1F6F5C" />
             <circle cx="26" cy="3" r="2.5" fill="#1F6F5C" />
           </svg>
-          <span className="font-semibold text-lg text-stone-900 tracking-tight">pageviz</span>
+          <span className="font-semibold text-lg text-stone-900 tracking-tight">Pageviz</span>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-2xl p-8 space-y-4">

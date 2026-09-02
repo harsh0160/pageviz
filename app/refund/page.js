@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Refund Policy — PageViz',
-  description: 'Refund Policy for PageViz.',
+  title: 'Refund Policy — Pageviz',
+  description: 'Refund Policy for Pageviz.',
 }
 
 const displayFont = { fontFamily: 'var(--font-display)' }
@@ -16,7 +16,7 @@ function LegalNav() {
           <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
             <polyline points="1,13 7,13 9,4 12,15 14,9 16,9 18,3 20,13 25,13" stroke="#1F4A3D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          PageViz
+          Pageviz
         </Link>
         <div className="flex items-center gap-5 text-sm">
           <Link href="/terms" className="text-[#5C6E65] hover:text-[#13221D] transition-colors">Terms</Link>
@@ -52,13 +52,13 @@ export default function RefundPage() {
         <p className="text-xs tracking-wide text-[#5C6E65] mb-3" style={monoFont}>LAST UPDATED: AUGUST 26, 2026</p>
         <h1 className="text-4xl font-bold text-[#13221D] mb-8" style={displayFont}>Refund Policy</h1>
 
-        <P>We want you to feel confident subscribing to PageViz. This policy explains when we&apos;ll issue a refund for a paid plan.</P>
+        <P>We want you to feel confident subscribing to Pageviz. This policy explains when we&apos;ll issue a refund for a paid plan.</P>
 
         <H2>1. Who Processes Refunds</H2>
-        <P>Our order process is conducted by our online reseller, Paddle.com. Paddle.com Market Limited is the Merchant of Record for all orders placed through PageViz and handles the actual processing of any approved refund back to your original payment method.</P>
+        <P>Our order process is conducted by our online reseller, Paddle.com. Paddle.com Market Limited is the Merchant of Record for all orders placed through Pageviz and handles the actual processing of any approved refund back to your original payment method.</P>
 
         <H2>2. 14-Day Money-Back Guarantee</H2>
-        <P>If you&apos;re on your first paid subscription to PageViz and it&apos;s not for you, let us know within 14 days of your initial payment and we&apos;ll issue a full refund — no questions asked.</P>
+        <P>If you&apos;re on your first paid subscription to Pageviz and it&apos;s not for you, let us know within 14 days of your initial payment and we&apos;ll issue a full refund — no questions asked.</P>
 
         <H2>3. Renewal Charges</H2>
         <P>Once your subscription has renewed for a new billing period, that charge is generally non-refundable, since you&apos;ve had continued access to the service. If you meant to cancel before renewal and missed it by a short window, reach out — we review these on a case-by-case basis.</P>

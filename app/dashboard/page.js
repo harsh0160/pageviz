@@ -5,7 +5,52 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-const FREE_SITE_LIMIT = 1
+const SITE_LIMITS = { free: 1, pro: 10, business: 30 }
+
+function ActivationStatus({ siteId }) {
+  const [hasData, setHasData] = useState(null)
+  const [justCelebrated, setJustCelebrated] = useState(false)
+
+  useEffect(() => {
+    let alreadyCelebrated = false
+    try { alreadyCelebrated = localStorage.getItem(`pv_celebrated_${siteId}`) === '1' } catch (e) {}
+
+    const check = async () => {
+      const { count } = await supabase.from('pageviews').select('id', { count: 'exact', head: true }).eq('site_id', siteId)
+      const has = (count || 0) > 0
+      setHasData((prevHas) => {
+        if (has && prevHas === false && !alreadyCelebrated) {
+          setJustCelebrated(true)
+          try { localStorage.setItem(`pv_celebrated_${siteId}`, '1') } catch (e) {}
+        }
+        return has
+      })
+    }
+    check()
+    const interval = setInterval(check, 5000)
+    return () => clearInterval(interval)
+  }, [siteId])
+
+  if (hasData === null || (hasData && !justCelebrated)) return null
+
+  if (justCelebrated) {
+    return (
+      <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-2.5 py-1.5 mb-2 inline-flex items-center gap-1.5">
+        🎉 Your first visitor just showed up — you&apos;re live!
+      </p>
+    )
+  }
+
+  return (
+    <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5 mb-2 inline-flex items-center gap-1.5">
+      <span className="relative flex h-1.5 w-1.5">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+      </span>
+      Waiting for your first visitor...
+    </p>
+  )
+}
 
 export default function Dashboard() {
   const [user, setUser] = useState(null)
@@ -37,7 +82,7 @@ export default function Dashboard() {
     setPlan(data?.plan || 'free')
   }
 
-  const siteLimit = plan === 'free' ? FREE_SITE_LIMIT : Infinity
+  const siteLimit = SITE_LIMITS[plan] ?? SITE_LIMITS.free
 
   const handleAddSite = async (e) => {
     e.preventDefault()
@@ -69,9 +114,12 @@ export default function Dashboard() {
               <circle cx="18" cy="12" r="2.5" fill="#1F6F5C"/>
               <circle cx="26" cy="3" r="2.5" fill="#1F6F5C"/>
             </svg>
-            <span className="font-semibold text-stone-900 tracking-tight">pageviz</span>
+            <span className="font-semibold text-stone-900 tracking-tight">Pageviz</span>
           </div>
           <div className="flex items-center gap-5">
+            {plan === 'business' && (
+              <Link href="/dashboard/all" className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Combined view</Link>
+            )}
             <Link href="/pricing" className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Pricing</Link>
             <button onClick={handleLogout} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors">Log out</button>
           </div>
@@ -91,11 +139,16 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <p className="font-semibold text-stone-900">You&apos;ve hit the free plan limit</p>
-            <p className="text-sm text-stone-500 mt-1 mb-4">Free plan includes {FREE_SITE_LIMIT} site. Upgrade to track more sites.</p>
-            <Link href="/pricing" className="inline-block bg-[#1F6F5C] hover:bg-[#195C4C] text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors">
-              Upgrade
-            </Link>
+            <p className="font-semibold text-stone-900">You&apos;ve hit your {plan} plan&apos;s site limit</p>
+            <p className="text-sm text-stone-500 mt-1 mb-4">
+              Your plan includes {siteLimit} site{siteLimit !== 1 ? 's' : ''}.{' '}
+              {plan === 'business' ? 'Reply to any of our emails if you need more.' : 'Upgrade to track more.'}
+            </p>
+            {plan !== 'business' && (
+              <Link href="/pricing" className="inline-block bg-[#1F6F5C] hover:bg-[#195C4C] text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors">
+                Upgrade
+              </Link>
+            )}
           </div>
         ) : (
           <form onSubmit={handleAddSite} className="bg-white border border-stone-200 rounded-2xl p-5 mb-6 space-y-3">
@@ -122,7 +175,10 @@ export default function Dashboard() {
                 </span>
                 {site.name} <span className="text-stone-400 text-sm font-normal">({site.domain})</span>
               </Link>
-              <p className="text-xs text-stone-500 mt-3 mb-1">Paste this before &lt;/body&gt; on your site:</p>
+              <div className="mt-2">
+                <ActivationStatus siteId={site.id} />
+              </div>
+              <p className="text-xs text-stone-500 mt-2 mb-1">Paste this before &lt;/body&gt; on your site:</p>
               <code className="block bg-stone-50 border border-stone-200 text-xs font-mono p-2.5 rounded-lg overflow-x-auto text-stone-700">
                 {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/track.js" data-site-id="${site.id}"></script>`}
               </code>

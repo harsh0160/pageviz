@@ -45,7 +45,11 @@ export default function CheckoutButton({ plan, className, children }) {
     window.Paddle.Checkout.open({
       items: [{ priceId: PLAN_TO_PRICE[plan], quantity: 1 }],
       customData: { user_id: user.id },
-      settings: { displayMode: 'overlay', variant: 'one-page' },
+      settings: {
+        displayMode: 'overlay',
+        variant: 'one-page',
+        successUrl: `${window.location.origin}/dashboard`,
+      },
     })
   }
 

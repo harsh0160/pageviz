@@ -3,8 +3,23 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+
+// Pure data-fetching helper, kept outside the component: it never calls
+// setState itself, it just returns a result the caller decides what to do
+// with. Keeps the useEffect and the password-submit handler as the only
+// places that touch component state.
+async function fetchShareData(siteId, password) {
+  const res = await fetch('/api/share-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ siteId, password: password || '' }),
+  })
+  if (res.status === 404) return { notFound: true }
+  if (res.status === 401) return { needsPassword: true }
+  const data = await res.json()
+  return { site: data.site, pageviews: data.pageviews, retentionDays: data.retentionDays }
+}
 
 export default function PublicShare() {
   const params = useParams()
@@ -13,29 +28,59 @@ export default function PublicShare() {
   const [pageviews, setPageviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [needsPassword, setNeedsPassword] = useState(false)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [retentionDays, setRetentionDays] = useState(30)
 
   useEffect(() => {
-    const load = async () => {
-      const { data: siteData } = await supabase.from('sites').select('*').eq('id', siteId).eq('public_enabled', true).single()
-      if (!siteData) { setNotFound(true); setLoading(false); return }
-      setSite(siteData)
-
-      const since = new Date()
-      since.setDate(since.getDate() - 30)
-      const { data: pvData } = await supabase
-        .from('pageviews')
-        .select('*')
-        .eq('site_id', siteId)
-        .gte('created_at', since.toISOString())
-        .order('created_at', { ascending: true })
-      setPageviews(pvData || [])
+    let cancelled = false
+    fetchShareData(siteId).then((result) => {
+      if (cancelled) return
+      if (result.notFound) setNotFound(true)
+      else if (result.needsPassword) setNeedsPassword(true)
+      else { setSite(result.site); setPageviews(result.pageviews); setRetentionDays(result.retentionDays) }
       setLoading(false)
-    }
-    load()
+    })
+    return () => { cancelled = true }
   }, [siteId])
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const result = await fetchShareData(siteId, password)
+    if (result.notFound) setNotFound(true)
+    else if (result.needsPassword) setError('Incorrect password')
+    else { setSite(result.site); setPageviews(result.pageviews); setRetentionDays(result.retentionDays); setNeedsPassword(false) }
+    setLoading(false)
+  }
 
   if (loading) return <p className="p-6 text-stone-500 text-sm">Loading...</p>
   if (notFound) return <p className="p-6 text-stone-500 text-sm">This dashboard is private or doesn&apos;t exist.</p>
+
+  if (needsPassword) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
+        <form onSubmit={handlePasswordSubmit} className="bg-white border border-stone-200 rounded-2xl p-6 w-full max-w-sm">
+          <p className="font-medium text-stone-900 mb-1">Password protected</p>
+          <p className="text-sm text-stone-500 mb-4">Enter the password to view this dashboard.</p>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5C]/25 focus:border-[#1F6F5C] mb-2"
+            placeholder="Password"
+            autoFocus
+          />
+          {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
+          <button type="submit" className="w-full bg-[#1F6F5C] hover:bg-[#195C4C] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+            View dashboard
+          </button>
+        </form>
+      </div>
+    )
+  }
 
   const totalViews = pageviews.length
   const viewsByDay = {}
@@ -53,7 +98,7 @@ export default function PublicShare() {
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-3xl mx-auto p-6">
         <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{site.name}</h1>
-        <p className="text-stone-500 text-sm mb-6">{site.domain} · last 30 days</p>
+        <p className="text-stone-500 text-sm mb-6">{site.domain} · {retentionDays ? `last ${retentionDays} days` : 'all-time'}</p>
 
         <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4">
           <p className="text-4xl font-mono font-bold text-[#1F6F5C]">{totalViews}</p>
@@ -85,7 +130,7 @@ export default function PublicShare() {
         </div>
 
         <Link href="/" className="block text-center text-xs text-stone-400 mt-6 hover:text-[#1F6F5C] transition-colors">
-          Powered by pageviz — free privacy-friendly analytics
+          Powered by Pageviz — free privacy-friendly analytics
         </Link>
       </div>
     </div>
