@@ -69,12 +69,12 @@ export default function PublicShare() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5C]/25 focus:border-[#1F6F5C] mb-2"
+            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C] mb-2"
             placeholder="Password"
             autoFocus
           />
           {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
-          <button type="submit" className="w-full bg-[#1F6F5C] hover:bg-[#195C4C] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+          <button type="submit" className="w-full bg-[#195C4C] hover:bg-[#195C4C] text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
             View dashboard
           </button>
         </form>
@@ -101,7 +101,7 @@ export default function PublicShare() {
         <p className="text-stone-500 text-sm mb-6">{site.domain} · {retentionDays ? `last ${retentionDays} days` : 'all-time'}</p>
 
         <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4">
-          <p className="text-4xl font-mono font-bold text-[#1F6F5C]">{totalViews}</p>
+          <p className="text-4xl font-mono font-bold text-[#195C4C]">{totalViews}</p>
           <p className="text-sm text-stone-500 mt-1">Pageviews</p>
         </div>
 
@@ -113,7 +113,7 @@ export default function PublicShare() {
                 <XAxis dataKey="date" fontSize={12} stroke="#a8a29e" />
                 <YAxis allowDecimals={false} fontSize={12} stroke="#a8a29e" />
                 <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E7E5E0', fontSize: 13 }} />
-                <Line type="monotone" dataKey="count" stroke="#1F6F5C" strokeWidth={2} dot={{ fill: '#1F6F5C', r: 3 }} />
+                <Line type="monotone" dataKey="count" stroke="#195C4C" strokeWidth={2} dot={{ fill: '#195C4C', r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -129,7 +129,7 @@ export default function PublicShare() {
           ))}
         </div>
 
-        <Link href="/" className="block text-center text-xs text-stone-400 mt-6 hover:text-[#1F6F5C] transition-colors">
+        <Link href="/" className="block text-center text-xs text-stone-400 mt-6 hover:text-[#195C4C] transition-colors">
           Powered by Pageviz — free privacy-friendly analytics
         </Link>
       </div>

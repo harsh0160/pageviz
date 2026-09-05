@@ -33,11 +33,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
           <svg width="26" height="19" viewBox="0 0 28 20" fill="none">
-            <polyline points="2,16 10,10 18,12 26,3" stroke="#1F6F5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <circle cx="2" cy="16" r="2.5" fill="#1F6F5C" />
-            <circle cx="10" cy="10" r="2.5" fill="#1F6F5C" />
-            <circle cx="18" cy="12" r="2.5" fill="#1F6F5C" />
-            <circle cx="26" cy="3" r="2.5" fill="#1F6F5C" />
+            <polyline points="2,16 10,10 18,12 26,3" stroke="#195C4C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <circle cx="2" cy="16" r="2.5" fill="#195C4C" />
+            <circle cx="10" cy="10" r="2.5" fill="#195C4C" />
+            <circle cx="18" cy="12" r="2.5" fill="#195C4C" />
+            <circle cx="26" cy="3" r="2.5" fill="#195C4C" />
           </svg>
           <span className="font-semibold text-lg text-stone-900 tracking-tight">Pageviz</span>
         </div>
@@ -49,17 +49,17 @@ export default function LoginPage() {
           </div>
           <input type="email" placeholder="Email" value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5C]/25 focus:border-[#1F6F5C] transition-colors" required />
+            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C] transition-colors" required />
           <input type="password" placeholder="Password" value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5C]/25 focus:border-[#1F6F5C] transition-colors" required />
+            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C] transition-colors" required />
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full bg-[#1F6F5C] hover:bg-[#195C4C] text-white rounded-lg px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50">
+            className="w-full bg-[#195C4C] hover:bg-[#195C4C] text-white rounded-lg px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50">
             {loading ? 'Please wait...' : isSignUp ? 'Sign up' : 'Log in'}
           </button>
           <button type="button" onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-stone-500 hover:text-[#1F6F5C] underline block text-center w-full transition-colors">
+            className="text-sm text-stone-500 hover:text-[#195C4C] underline block text-center w-full transition-colors">
             {isSignUp ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
           </button>
         </form>

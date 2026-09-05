@@ -88,10 +88,13 @@ export default function SiteDetail() {
   }
 
   const saveSharePassword = async () => {
-    const { error } = await supabase.from('sites').update({ share_password: sharePassword || null }).eq('id', siteId)
-    if (!error) { setPasswordSaved(true); setTimeout(() => setPasswordSaved(false), 2000) }
-  }
-
+  const hashed = sharePassword
+    ? Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sharePassword))))
+        .map(b => b.toString(16).padStart(2, '0')).join('')
+    : null
+  const { error } = await supabase.from('sites').update({ share_password: hashed }).eq('id', siteId)
+  if (!error) { setPasswordSaved(true); setTimeout(() => setPasswordSaved(false), 2000) }
+}
   const exportCSV = () => {
     const header = ['date', 'page_url', 'referrer', 'device_type']
     const rows = pageviews.map((pv) => [
@@ -148,7 +151,7 @@ export default function SiteDetail() {
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-3xl mx-auto p-6">
-        <button onClick={() => router.push('/dashboard')} className="text-sm text-stone-500 hover:text-[#1F6F5C] transition-colors mb-4">← Back</button>
+        <button onClick={() => router.push('/dashboard')} className="text-sm text-stone-500 hover:text-[#195C4C] transition-colors mb-4">← Back</button>
 
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -172,7 +175,7 @@ export default function SiteDetail() {
                 key={r.days}
                 onClick={() => setRange(r.days)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  range === r.days ? 'bg-[#1F6F5C] text-white' : 'text-stone-500 hover:text-stone-900'
+                  range === r.days ? 'bg-[#195C4C] text-white' : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
                 {r.label}
@@ -182,11 +185,11 @@ export default function SiteDetail() {
         </div>
 
         {isPaid ? (
-          <button onClick={exportCSV} className="text-xs font-medium text-[#1F6F5C] border border-[#1F6F5C] rounded-lg px-3 py-1.5 hover:bg-[#1F6F5C] hover:text-white transition-colors mb-4">
+          <button onClick={exportCSV} className="text-xs font-medium text-[#195C4C] border border-[#195C4C] rounded-lg px-3 py-1.5 hover:bg-[#195C4C] hover:text-white transition-colors mb-4">
             Export CSV
           </button>
         ) : (
-          <Link href="/pricing" className="inline-block text-xs text-stone-400 hover:text-[#1F6F5C] mb-4">
+          <Link href="/pricing" className="inline-block text-xs text-stone-400 hover:text-[#195C4C] mb-4">
             CSV export is on Pro →
           </Link>
         )}
@@ -198,13 +201,13 @@ export default function SiteDetail() {
           </div>
           <div className="flex items-center gap-3">
             {site.public_enabled && (
-              <button onClick={copyLink} className="text-xs font-medium text-[#1F6F5C] border border-[#1F6F5C] rounded-lg px-3 py-1.5 hover:bg-[#1F6F5C] hover:text-white transition-colors">
+              <button onClick={copyLink} className="text-xs font-medium text-[#195C4C] border border-[#195C4C] rounded-lg px-3 py-1.5 hover:bg-[#195C4C] hover:text-white transition-colors">
                 {copied ? 'Copied!' : 'Copy link'}
               </button>
             )}
             <button
               onClick={togglePublic}
-              className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 ${site.public_enabled ? 'bg-[#1F6F5C] justify-end' : 'bg-stone-300 justify-start'}`}
+              className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 ${site.public_enabled ? 'bg-[#195C4C] justify-end' : 'bg-stone-300 justify-start'}`}
             >
               <span className="w-5 h-5 bg-white rounded-full shadow-sm" />
             </button>
@@ -221,9 +224,9 @@ export default function SiteDetail() {
                 value={sharePassword}
                 onChange={(e) => setSharePassword(e.target.value)}
                 placeholder="No password set"
-                className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5C]/25 focus:border-[#1F6F5C]"
+                className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C]"
               />
-              <button onClick={saveSharePassword} className="text-xs font-medium text-white bg-[#1F6F5C] hover:bg-[#195C4C] rounded-lg px-3.5 transition-colors">
+              <button onClick={saveSharePassword} className="text-xs font-medium text-white bg-[#195C4C] hover:bg-[#195C4C] rounded-lg px-3.5 transition-colors">
                 {passwordSaved ? 'Saved!' : 'Save'}
               </button>
             </div>
@@ -239,7 +242,7 @@ export default function SiteDetail() {
         </div>
 
         <div className="bg-white border border-stone-200 rounded-2xl p-5 mb-4">
-          <p className="text-4xl font-mono font-bold text-[#1F6F5C]">{totalViews}</p>
+          <p className="text-4xl font-mono font-bold text-[#195C4C]">{totalViews}</p>
           <p className="text-sm text-stone-500 mt-1">Pageviews — last {range} days</p>
         </div>
 
@@ -251,7 +254,7 @@ export default function SiteDetail() {
                 <XAxis dataKey="date" fontSize={12} stroke="#a8a29e" />
                 <YAxis allowDecimals={false} fontSize={12} stroke="#a8a29e" />
                 <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E7E5E0', fontSize: 13 }} />
-                <Line type="monotone" dataKey="count" stroke="#1F6F5C" strokeWidth={2} dot={{ fill: '#1F6F5C', r: 3 }} />
+                <Line type="monotone" dataKey="count" stroke="#195C4C" strokeWidth={2} dot={{ fill: '#195C4C', r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -306,7 +309,7 @@ export default function SiteDetail() {
             ))}
           </div>
         ) : (
-          <Link href="/pricing" className="block bg-white border border-dashed border-stone-300 rounded-2xl p-5 mt-4 text-center text-sm text-stone-400 hover:text-[#1F6F5C] hover:border-[#1F6F5C] transition-colors">
+          <Link href="/pricing" className="block bg-white border border-dashed border-stone-300 rounded-2xl p-5 mt-4 text-center text-sm text-stone-400 hover:text-[#195C4C] hover:border-[#195C4C] transition-colors">
             Custom events (signup clicks, goals) are on Pro →
           </Link>
         )}

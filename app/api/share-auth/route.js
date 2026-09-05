@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-
+import crypto from 'crypto'
+const hashPassword = (pw) => crypto.createHash('sha256').update(pw).digest('hex')
 // IMPORTANT: this route uses the Supabase SERVICE ROLE key, not the anon key,
 // so it can read site/pageview rows even after RLS is locked down to stop
 // anonymous clients from reading them directly. Never expose this key to the
@@ -31,7 +32,7 @@ export async function POST(req) {
   // but flagging honestly rather than calling it a hash like the old comment
   // here did. Worth hashing (e.g. Web Crypto SHA-256 client-side before the
   // update() call, compare hashes here) if this ever needs to be stronger.
-  if (site.share_password && site.share_password !== (password || '')) {
+if (site.share_password && site.share_password !== hashPassword(password || '')) {
     return NextResponse.json({ error: 'Incorrect password', needsPassword: true }, { status: 401 })
   }
 
