@@ -47,8 +47,8 @@ export default function CombinedDashboard() {
     return (
       <div className="min-h-screen bg-dotted flex items-center justify-center p-6">
         <div className="bg-white border border-stone-200 rounded-2xl p-8 max-w-sm text-center">
-          <p className="font-semibold text-stone-900">Combined view is a Business feature</p>
-          <p className="text-sm text-stone-500 mt-2 mb-5">See every site&apos;s traffic in one dashboard once you&apos;re on Business.</p>
+          <p className="font-semibold text-stone-900">Combined view is a Max feature</p>
+          <p className="text-sm text-stone-500 mt-2 mb-5">See every site&apos;s traffic in one dashboard once you&apos;re on Max.</p>
           <Link href="/pricing" className="inline-block bg-[#1F6F5C] hover:bg-[#195C4C] text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors">
             View plans
           </Link>

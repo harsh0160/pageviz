@@ -35,12 +35,12 @@ const plans = [
     cta: { label: 'Upgrade to Pro', checkoutPlan: 'pro', style: 'primary' },
   },
   {
-    name: 'Business',
+    name: 'Max',
     price: '$22',
     period: '/month',
     sub: 'For teams running several properties.',
     features: ['Up to 30 sites', 'Everything in Pro', 'Multi-site combined dashboard', 'Forever history', 'Priority support & onboarding help'],
-    cta: { label: 'Upgrade to Business', checkoutPlan: 'business', style: 'outline' },
+    cta: { label: 'Upgrade to Max', checkoutPlan: 'business', style: 'outline' },
   },
 ]
 

@@ -61,7 +61,7 @@ export default function TermsPage() {
         <P>You need an account to use Pageviz. You&apos;re responsible for keeping your login credentials secure and for all activity that happens under your account. Let us know right away if you suspect unauthorized access.</P>
 
         <H2>3. Plans, Billing &amp; Payments</H2>
-        <P>Pageviz is offered on a Free plan and paid subscription plans (currently Pro and Business), billed monthly. Paid plans renew automatically until cancelled. You can cancel anytime from your account settings; you&apos;ll keep access until the end of the billing period you&apos;ve already paid for.</P>
+        <P>Pageviz is offered on a Free plan and paid subscription plans (currently Pro and Max), billed monthly. Paid plans renew automatically until cancelled. You can cancel anytime from your account settings; you&apos;ll keep access until the end of the billing period you&apos;ve already paid for.</P>
         <P>Our order process is conducted by our online reseller, Paddle.com. Paddle.com Market Limited is the Merchant of Record for all orders placed through Pageviz and handles payment collection, taxes, invoicing, and order-related customer support, including refunds under our <Link href="/refund" className="text-[#1F4A3D] font-medium underline">Refund Policy</Link>. Your purchase is also subject to Paddle&apos;s buyer terms, shown at checkout.</P>
         <P>We may change plan pricing or features going forward. If a change affects your existing subscription, we&apos;ll give you reasonable notice before it takes effect.</P>
 
