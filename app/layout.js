@@ -27,6 +27,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${comfortaa.variable} ${inter.variable} ${plexMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          (function() {
+             try {
+        var saved = localStorage.getItem('pv_theme') || 'system';
+        var isDark = saved === 'dark' || (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          } catch (e) {}
+                 })();
+  `          }} />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>

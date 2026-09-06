@@ -13,6 +13,8 @@
   --font-mono: var(--font-mono-data);
 }
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 body {
   font-family: var(--font-body), sans-serif;
 }
