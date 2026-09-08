@@ -29,37 +29,37 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dotted flex items-center justify-center p-4">
+    <div className="min-h-screen bg-dotted dark:bg-[#181818] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
           <svg width="26" height="19" viewBox="0 0 28 20" fill="none">
-            <polyline points="2,16 10,10 18,12 26,3" stroke="#195C4C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <circle cx="2" cy="16" r="2.5" fill="#195C4C" />
-            <circle cx="10" cy="10" r="2.5" fill="#195C4C" />
-            <circle cx="18" cy="12" r="2.5" fill="#195C4C" />
-            <circle cx="26" cy="3" r="2.5" fill="#195C4C" />
+            <polyline points="2,16 10,10 18,12 26,3" stroke="#1F4A3D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="dark:stroke-[#34D399]" />
+            <circle cx="2" cy="16" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
+            <circle cx="10" cy="10" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
+            <circle cx="18" cy="12" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
+            <circle cx="26" cy="3" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
           </svg>
-          <span className="font-semibold text-lg text-stone-900 tracking-tight">Pageviz</span>
+          <span className="font-semibold text-lg text-stone-900 dark:text-[#F9FAFB] tracking-tight">Pageviz</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-2xl p-8 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-[#14231E] border border-stone-200 dark:border-white/10 rounded-2xl p-8 space-y-4">
           <div className="mb-2">
-            <h1 className="text-2xl font-bold text-stone-900 tracking-tight">{isSignUp ? 'Create your account' : 'Welcome back'}</h1>
-            <p className="text-sm text-stone-500 mt-1">{isSignUp ? 'Start tracking in under a minute.' : 'Log in to see your stats.'}</p>
+            <h1 className="text-2xl font-bold text-stone-900 dark:text-[#F9FAFB] tracking-tight">{isSignUp ? 'Create your account' : 'Welcome back'}</h1>
+            <p className="text-sm text-stone-500 dark:text-[#A0B3AC] mt-1">{isSignUp ? 'Start tracking in under a minute.' : 'Log in to see your stats.'}</p>
           </div>
           <input type="email" placeholder="Email" value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C] transition-colors" required />
+            className="w-full border border-stone-300 dark:border-white/10 dark:bg-[#181818] dark:text-[#F9FAFB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F4A3D]/25 focus:border-[#1F4A3D] transition-colors" required />
           <input type="password" placeholder="Password" value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#195C4C]/25 focus:border-[#195C4C] transition-colors" required />
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+            className="w-full border border-stone-300 dark:border-white/10 dark:bg-[#181818] dark:text-[#F9FAFB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F4A3D]/25 focus:border-[#1F4A3D] transition-colors" required />
+          {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full bg-[#195C4C] hover:bg-[#195C4C] text-white rounded-lg px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50">
+            className="w-full bg-[#1F4A3D] hover:bg-[#16362C] text-white rounded-lg px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50">
             {loading ? 'Please wait...' : isSignUp ? 'Sign up' : 'Log in'}
           </button>
           <button type="button" onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-stone-500 hover:text-[#195C4C] underline block text-center w-full transition-colors">
+            className="text-sm text-stone-500 dark:text-[#A0B3AC] hover:text-[#1F4A3D] dark:hover:text-[#34D399] underline block text-center w-full transition-colors">
             {isSignUp ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
           </button>
         </form>

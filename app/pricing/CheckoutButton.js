@@ -6,9 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { loadPaddle } from '@/lib/paddle-loader'
 import { PLAN_TO_PRICE } from '@/lib/paddle-prices'
 
-export default function CheckoutButton({ plan, className, children }) {
-  // 'loading' | 'ready' | 'error' — 'error' lets the button offer a retry
-  // instead of being stuck on "Loading…" forever if the script/init fails.
+export default function CheckoutButton({ plan, className, children, discountCode }) {
   const [status, setStatus] = useState('loading')
   const router = useRouter()
 
@@ -34,8 +32,6 @@ export default function CheckoutButton({ plan, className, children }) {
       return
     }
 
-    // Must know WHO is paying before opening checkout, otherwise a successful
-    // payment has no Supabase user to attach the plan to on the webhook side.
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login?signup=1')
@@ -45,6 +41,7 @@ export default function CheckoutButton({ plan, className, children }) {
     window.Paddle.Checkout.open({
       items: [{ priceId: PLAN_TO_PRICE[plan], quantity: 1 }],
       customData: { user_id: user.id },
+      ...(discountCode ? { discountCode } : {}),
       settings: {
         displayMode: 'overlay',
         variant: 'one-page',

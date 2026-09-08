@@ -9,6 +9,15 @@ export const metadata = {
 const displayFont = { fontFamily: 'var(--font-display)' }
 const monoFont = { fontFamily: 'var(--font-mono-data)' }
 
+// Founding-member offer: edit or remove FOUNDING_OFFER_END to end it.
+// You still need to create this exact discount code in the LIVE Paddle
+// dashboard yourself: Catalog -> Discounts -> New discount -> code "FOUNDER20"
+// -> percentage off, set your %, set an expiry there too if you want a hard
+// stop even if someone has this page cached.
+const FOUNDING_OFFER_END = '2026-11-01'
+const FOUNDING_OFFER_CODE = 'FOUNDER20'
+const foundingOfferActive = new Date() < new Date(FOUNDING_OFFER_END)
+
 function Check() {
   return (
     <svg className="w-4.25 h-4.25 text-[#1F4A3D] mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -69,6 +78,12 @@ export default function PricingPage() {
           <p className="mt-3.5 text-[17px] text-[#5C6E65]">Start free forever on side projects. Upgrade when your traffic — or your site count — grows.</p>
         </div>
 
+        {foundingOfferActive && (
+          <div className="mb-10 bg-[#1F4A3D] text-white rounded-2xl px-6 py-4 flex flex-wrap items-center gap-3 justify-between">
+            <p className="text-sm font-medium">🎉 Founding member offer — use code <span className="font-mono bg-white/15 px-2 py-0.5 rounded">{FOUNDING_OFFER_CODE}</span> at checkout for early-adopter pricing.</p>
+          </div>
+        )}
+
         <div className="grid sm:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <div
@@ -101,6 +116,7 @@ export default function PricingPage() {
               {plan.cta.checkoutPlan ? (
                 <CheckoutButton
                   plan={plan.cta.checkoutPlan}
+                  discountCode={foundingOfferActive ? FOUNDING_OFFER_CODE : undefined}
                   className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 transition-colors ${
                     plan.cta.style === 'primary'
                       ? 'text-white bg-[#E64A12] hover:bg-[#13221D]'
@@ -123,6 +139,19 @@ export default function PricingPage() {
               )}
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-[#E4E7E1] bg-white px-7 py-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 className="font-semibold text-[#13221D]">Need something custom for your team?</h3>
+            <p className="text-sm text-[#5C6E65] mt-1">More than 30 sites, custom retention, or a company-wide plan — let's talk.</p>
+          </div>
+          <a
+            href="mailto:pagevizofficial@gmail.com?subject=Custom%20team%20plan"
+            className="shrink-0 text-sm font-bold text-[#1F4A3D] border-[1.5px] border-[#1F4A3D] hover:bg-[#1F4A3D] hover:text-white transition-colors rounded-lg px-5 py-2.5"
+          >
+            Contact us
+          </a>
         </div>
 
         <p className="mt-10 text-sm text-[#5C6E65]">
