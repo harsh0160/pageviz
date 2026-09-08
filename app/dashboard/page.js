@@ -59,19 +59,37 @@ export default function Dashboard() {
   const [name, setName] = useState('')
   const [domain, setDomain] = useState('')
   const [loading, setLoading] = useState(false)
+  const [stats, setStats] = useState({ totalViews: 0, activeNow: 0 })
   const router = useRouter()
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/login')
-      // eslint-disable-next-line react-hooks/immutability
       else { setUser(data.user); loadSites(data.user.id); loadPlan(data.user.id) }
     })
   }, [router])
 
   const loadSites = async (userId) => {
     const { data } = await supabase.from('sites').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    setSites(data || [])
+    const siteList = data || []
+
+    if (siteList.length > 0) {
+      const siteIds = siteList.map((s) => s.id)
+
+      const withCounts = await Promise.all(siteList.map(async (site) => {
+        const { count } = await supabase.from('pageviews').select('id', { count: 'exact', head: true }).eq('site_id', site.id)
+        return { ...site, viewCount: count || 0 }
+      }))
+      setSites(withCounts)
+
+      const { count: totalViews } = await supabase.from('pageviews').select('id', { count: 'exact', head: true }).in('site_id', siteIds)
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const { count: activeNow } = await supabase.from('heartbeats').select('visitor_ref', { count: 'exact', head: true }).in('site_id', siteIds).gte('last_seen_at', fiveMinAgo)
+      setStats({ totalViews: totalViews || 0, activeNow: activeNow || 0 })
+    } else {
+      setSites([])
+      setStats({ totalViews: 0, activeNow: 0 })
+    }
   }
 
   const loadPlan = async (userId) => {
@@ -102,7 +120,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-dotted">
       <div className="border-b border-stone-200 bg-white/70 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <svg width="22" height="16" viewBox="0 0 28 20" fill="none">
               <polyline points="2,16 10,10 18,12 26,3" stroke="#1F6F5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -124,11 +142,32 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-3xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-lg font-semibold text-stone-900">{user.email}</h1>
           <p className="text-sm text-stone-500 font-mono">{sites.length} site{sites.length !== 1 ? 's' : ''} tracked</p>
         </div>
+
+        {sites.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4">
+              <p className="text-[0.68rem] uppercase tracking-wide text-stone-400 font-semibold mb-1">Total pageviews</p>
+              <p className="text-2xl font-semibold text-stone-900">{stats.totalViews.toLocaleString()}</p>
+            </div>
+            <div className="bg-white border border-stone-200 rounded-2xl p-4">
+              <p className="text-[0.68rem] uppercase tracking-wide text-stone-400 font-semibold mb-1">Active now</p>
+              <p className="text-2xl font-semibold text-stone-900">{stats.activeNow}</p>
+            </div>
+            <div className="bg-white border border-stone-200 rounded-2xl p-4">
+              <p className="text-[0.68rem] uppercase tracking-wide text-stone-400 font-semibold mb-1">Sites used</p>
+              <p className="text-2xl font-semibold text-stone-900">{sites.length} <span className="text-sm text-stone-400 font-normal">/ {siteLimit}</span></p>
+            </div>
+            <div className="bg-white border border-stone-200 rounded-2xl p-4">
+              <p className="text-[0.68rem] uppercase tracking-wide text-stone-400 font-semibold mb-1">Plan</p>
+              <p className="text-2xl font-semibold text-stone-900 capitalize">{plan === 'business' ? 'Max' : plan}</p>
+            </div>
+          </div>
+        )}
 
         {limitReached ? (
           <div className="bg-white border border-stone-200 rounded-2xl p-6 mb-6 text-center">
@@ -137,7 +176,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <p className="font-semibold text-stone-900">You&apos;ve hit your {plan} plan&apos;s site limit</p>
+            <p className="font-semibold text-stone-900">You&apos;ve hit your {plan === 'business' ? 'Max' : plan} plan&apos;s site limit</p>
             <p className="text-sm text-stone-500 mt-1 mb-4">
               Your plan includes {siteLimit} site{siteLimit !== 1 ? 's' : ''}.{' '}
               {plan === 'business' ? 'Reply to any of our emails if you need more.' : 'Upgrade to track more.'}
@@ -166,17 +205,28 @@ export default function Dashboard() {
         <div className="space-y-3">
           {sites.map((site) => (
             <div key={site.id} className="bg-white border border-stone-200 rounded-2xl p-5">
-              <Link href={`/dashboard/${site.id}`} className="flex items-center gap-2 font-medium text-stone-900 hover:text-[#1F6F5C] transition-colors">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                {site.name} <span className="text-stone-400 text-sm font-normal">({site.domain})</span>
-              </Link>
-              <div className="mt-2">
-                <ActivationStatus siteId={site.id} />
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <Link href={`/dashboard/${site.id}`} className="flex items-center gap-2 font-medium text-stone-900 hover:text-[#1F6F5C] transition-colors">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    {site.name} <span className="text-stone-400 text-sm font-normal">({site.domain})</span>
+                  </Link>
+                  {site.share_password && (
+                    <span className="inline-block mt-2 text-[0.68rem] font-medium px-2 py-0.5 rounded-full bg-[#1F4A3D]/10 text-[#1F4A3D]">Password protected</span>
+                  )}
+                  <div className="mt-2">
+                    <ActivationStatus siteId={site.id} />
+                  </div>
+                </div>
+                <div className="text-right shrink-0 pl-4 border-l border-stone-100">
+                  <p className="text-lg font-semibold text-stone-900 font-mono">{site.viewCount.toLocaleString()}</p>
+                  <p className="text-[0.65rem] text-stone-400">total views</p>
+                </div>
               </div>
-              <p className="text-xs text-stone-500 mt-2 mb-1">Paste this before &lt;/body&gt; on your site:</p>
+              <p className="text-xs text-stone-500 mt-3 mb-1">Paste this before &lt;/body&gt; on your site:</p>
               <code className="block bg-stone-50 border border-stone-200 text-xs font-mono p-2.5 rounded-lg overflow-x-auto text-stone-700">
                 {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/track.js" data-site-id="${site.id}"></script>`}
               </code>
