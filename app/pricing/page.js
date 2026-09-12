@@ -14,7 +14,7 @@ const monoFont = { fontFamily: 'var(--font-mono-data)' }
 // dashboard yourself: Catalog -> Discounts -> New discount -> code "FOUNDER20"
 // -> percentage off, set your %, set an expiry there too if you want a hard
 // stop even if someone has this page cached.
-const FOUNDING_OFFER_END = '2026-11-01'
+const FOUNDING_OFFER_END = '2025-01-01'
 const FOUNDING_OFFER_CODE = 'FOUNDER20'
 const foundingOfferActive = new Date() < new Date(FOUNDING_OFFER_END)
 
