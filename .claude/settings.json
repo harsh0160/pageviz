@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Edit(./.claude/settings.json)",
+      "Write(./.claude/settings.json)",
+      "Bash(rm:*)"
+    ]
+  }
+}

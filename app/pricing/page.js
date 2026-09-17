@@ -1,13 +1,17 @@
 import Link from 'next/link'
 import CheckoutButton from './CheckoutButton'
+import MarketingHeader from '../_components/MarketingHeader'
+import Footer from '../_components/Footer'
+import Icon from '../_components/Icon'
+import { PLANS, PLAN_ORDER, CONTACT_EMAIL } from '@/lib/plans'
+
+// Ported from the reference build: src/pages/marketing.js → pricingPage().
+// Paid CTAs are the app's existing Paddle CheckoutButton (the reference only links to its demo).
 
 export const metadata = {
   title: 'Pricing — Pageviz',
   description: 'Simple, honest pricing for Pageviz — privacy-first website analytics.',
 }
-
-const displayFont = { fontFamily: 'var(--font-display)' }
-const monoFont = { fontFamily: 'var(--font-mono-data)' }
 
 // Founding-member offer: edit or remove FOUNDING_OFFER_END to end it.
 // You still need to create this exact discount code in the LIVE Paddle
@@ -18,160 +22,86 @@ const FOUNDING_OFFER_END = '2025-01-01'
 const FOUNDING_OFFER_CODE = 'FOUNDER20'
 const foundingOfferActive = new Date() < new Date(FOUNDING_OFFER_END)
 
-function Check() {
-  return (
-    <svg className="w-4.25 h-4.25 text-[#1F4A3D] mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  )
-}
-
-const plans = [
-  {
-    name: 'Free',
-    price: 'Free',
-    sub: 'No credit card, ever.',
-    features: ['1 site tracked', 'Unlimited pageviews', '7-day history', 'Referrer and device breakdown'],
-    cta: { label: 'Start free', href: '/login?signup=1', style: 'outline' },
-  },
-  {
-    name: 'Pro',
-    price: '$9',
-    period: '/month',
-    sub: 'For production sites and growing projects.',
-    featured: true,
-    features: ['Up to 10 sites', '1-year history', 'CSV export', 'Password-protected share links', 'Custom events & goals', 'Real-time visitor count', 'Priority email support'],
-    cta: { label: 'Upgrade to Pro', checkoutPlan: 'pro', style: 'primary' },
-  },
-  {
-    name: 'Max',
-    price: '$22',
-    period: '/month',
-    sub: 'For teams running several properties.',
-    features: ['Up to 30 sites', 'Everything in Pro', 'Multi-site combined dashboard', 'Forever history', 'Priority support & onboarding help'],
-    cta: { label: 'Upgrade to Max', checkoutPlan: 'business', style: 'outline' },
-  },
+const FAQS = [
+  ['Is the free plan really free?', 'Yes, genuinely. One website, seven days of history, and all the essentials, at no cost and with no card required.'],
+  ['What counts as a website?', 'Any single domain you add to your workspace. The Pro plan holds up to ten, and Max stretches to thirty.'],
+  ['Do you use cookies?', 'Never. Pageviz is cookieless by design, which is why you never need a consent banner to use it.'],
+  ['Can I export my data?', 'On Pro and Max you can export clean CSV files whenever you like. Your data always belongs to you.'],
 ]
 
-export default function PricingPage() {
+export default async function PricingPage({ searchParams }) {
+  const { from } = await searchParams
+  const back = from === 'demo' ? ['/demo', 'Back to the demo'] : from === 'workspace' ? ['/dashboard', 'Back to your sites'] : null
+
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" style={{ fontFamily: 'var(--font-body)' }}>
-      <nav className="border-b border-[#E4E7E1] sticky top-0 z-20 bg-[#FAFAF7]/95 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-7 py-5 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl text-[#13221D]" style={displayFont}>
-            <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
-              <polyline points="1,13 7,13 9,4 12,15 14,9 16,9 18,3 20,13 25,13" stroke="#1F4A3D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Pageviz
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/login" className="hidden sm:inline text-sm font-medium text-[#5C6E65] hover:text-[#13221D] transition-colors">Log in</Link>
-            <Link href="/login?signup=1" className="text-sm font-bold text-white bg-[#E64A12] hover:bg-[#13221D] transition-colors rounded-lg px-5 py-2.5">Sign up free</Link>
+    <>
+      <MarketingHeader active="pricing" />
+      <main id="main-content">
+        <section className="page-hero">
+          <div className="container">
+            {back && <Link className="back-link" href={back[0]}><Icon name="arrow-left" />{back[1]}</Link>}
+            <span className="eyebrow">Simple pricing</span>
+            <h1 className="section-heading">Pick a plot that<br /><em>fits what you&apos;re growing.</em></h1>
+            <p className="section-intro center-intro">Start free and stay free for as long as you like. Move up whenever your garden needs a little more room. Cancel any time.</p>
           </div>
-        </div>
-      </nav>
+        </section>
 
-      <main className="max-w-5xl mx-auto px-7 py-20">
-        <div className="max-w-xl mb-14">
-          <span className="block text-xs tracking-wide text-[#E64A12] uppercase font-medium mb-3" style={monoFont}>pricing</span>
-          <h1 className="text-[28px] sm:text-4xl font-bold leading-tight text-[#13221D]" style={displayFont}>Simple, honest pricing.</h1>
-          <p className="mt-3.5 text-[17px] text-[#5C6E65]">Start free forever on side projects. Upgrade when your traffic — or your site count — grows.</p>
-        </div>
-
-        {foundingOfferActive && (
-          <div className="mb-10 bg-[#1F4A3D] text-white rounded-2xl px-6 py-4 flex flex-wrap items-center gap-3 justify-between">
-            <p className="text-sm font-medium">🎉 Founding member offer — use code <span className="font-mono bg-white/15 px-2 py-0.5 rounded">{FOUNDING_OFFER_CODE}</span> at checkout for early-adopter pricing.</p>
-          </div>
-        )}
-
-        <div className="grid sm:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl p-8 bg-white relative ${
-                plan.featured
-                  ? 'border-2 border-[#E64A12] shadow-[0_20px_44px_-28px_rgba(230,74,18,0.4)]'
-                  : 'border border-[#E4E7E1]'
-              }`}
-            >
-              {plan.featured && (
-                <span className="absolute -top-3.5 left-7 bg-[#E64A12] text-white font-bold text-[11.5px] px-3.5 py-1.5 rounded-full uppercase" style={monoFont}>
-                  Most popular
-                </span>
-              )}
-              <h3 className="text-[22px] font-semibold text-[#13221D]">{plan.name}</h3>
-              <div className="my-4 flex items-baseline gap-1">
-                <span className="text-[34px] font-medium" style={monoFont}>{plan.price}</span>
-                {plan.period && <span className="text-sm text-[#5C6E65]">{plan.period}</span>}
-              </div>
-              <div className="text-sm text-[#5C6E65] mb-6">{plan.sub}</div>
-              <ul className="flex flex-col gap-3.5 mb-7">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex gap-2.5 text-[15px] items-start">
-                    <Check />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              {plan.cta.checkoutPlan ? (
-                <CheckoutButton
-                  plan={plan.cta.checkoutPlan}
-                  discountCode={foundingOfferActive ? FOUNDING_OFFER_CODE : undefined}
-                  className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 transition-colors ${
-                    plan.cta.style === 'primary'
-                      ? 'text-white bg-[#E64A12] hover:bg-[#13221D]'
-                      : 'text-[#1F4A3D] border-[1.5px] border-[#1F4A3D] hover:bg-[#1F4A3D] hover:text-white'
-                  }`}
-                >
-                  {plan.cta.label}
-                </CheckoutButton>
-              ) : (
-                <Link
-                  href={plan.cta.href}
-                  className={`w-full flex justify-center text-sm font-bold rounded-lg px-5 py-3 transition-colors ${
-                    plan.cta.style === 'primary'
-                      ? 'text-white bg-[#E64A12] hover:bg-[#13221D]'
-                      : 'text-[#1F4A3D] border-[1.5px] border-[#1F4A3D] hover:bg-[#1F4A3D] hover:text-white'
-                  }`}
-                >
-                  {plan.cta.label}
-                </Link>
-              )}
+        <section className="section section-top-tight">
+          <div className="container">
+            {foundingOfferActive && (
+              <p className="price-offer"><Icon name="sparkles" />Founding member offer — use code <code>{FOUNDING_OFFER_CODE}</code> at checkout for early-adopter pricing.</p>
+            )}
+            <div className="price-grid">
+              {PLAN_ORDER.map((key) => {
+                const plan = PLANS[key]
+                const featured = key === 'pro'
+                const buttonClass = `button ${featured ? 'button-primary' : 'button-secondary'} full-width`
+                return (
+                  <article key={key} className={`price-card ${featured ? 'price-card-featured' : ''}`}>
+                    {featured && <span className="price-flag">Most planted</span>}
+                    <div className="price-head"><h3>{plan.name}</h3><p>{plan.description}</p></div>
+                    <div className="price-amount"><strong>${plan.price}</strong><span>/ month</span></div>
+                    {key === 'free' ? (
+                      <Link href="/signup" className={buttonClass}>Start for free<Icon name="arrow-right" /></Link>
+                    ) : (
+                      <CheckoutButton plan={key} discountCode={foundingOfferActive ? FOUNDING_OFFER_CODE : undefined} className={buttonClass}>
+                        Upgrade to {plan.name}<Icon name={featured ? 'arrow-up-right' : 'arrow-right'} />
+                      </CheckoutButton>
+                    )}
+                    <ul className="price-features">
+                      {plan.features.map((feature) => <li key={feature}><Icon name="check" />{feature}</li>)}
+                    </ul>
+                  </article>
+                )
+              })}
             </div>
-          ))}
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-[#E4E7E1] bg-white px-7 py-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h3 className="font-semibold text-[#13221D]">Need something custom for your team?</h3>
-            <p className="text-sm text-[#5C6E65] mt-1">More than 30 sites, custom retention, or a company-wide plan — let's talk.</p>
+            <div className="price-custom">
+              <div>
+                <h3>Need something custom for your team?</h3>
+                <p>More than 30 sites, custom retention, or a company-wide plan — let&apos;s talk.</p>
+              </div>
+              <a href={`mailto:${CONTACT_EMAIL}?subject=Custom%20team%20plan`} className="button button-secondary">Contact us <Icon name="arrow-up-right" /></a>
+            </div>
+            <p className="price-note"><Icon name="shield-check" /> Every plan is cookie-free and privacy-first. Payments are handled by Paddle.</p>
+            <p className="price-note">Questions about billing? <Link className="text-link" href="/refund">Refund policy</Link><Link className="text-link" href="/terms">Terms of service</Link></p>
           </div>
-          <a
-            href="mailto:pagevizofficial@gmail.com?subject=Custom%20team%20plan"
-            className="shrink-0 text-sm font-bold text-[#1F4A3D] border-[1.5px] border-[#1F4A3D] hover:bg-[#1F4A3D] hover:text-white transition-colors rounded-lg px-5 py-2.5"
-          >
-            Contact us
-          </a>
-        </div>
+        </section>
 
-        <p className="mt-10 text-sm text-[#5C6E65]">
-          Questions about billing? See our{' '}
-          <Link href="/refund" className="text-[#1F4A3D] font-medium underline">Refund Policy</Link>
-          {' '}or{' '}
-          <Link href="/terms" className="text-[#1F4A3D] font-medium underline">Terms of Service</Link>.
-        </p>
+        <section className="section section-soft">
+          <div className="container">
+            <div className="section-head center">
+              <span className="eyebrow">Good to know</span>
+              <h2 className="section-heading">A few honest answers.</h2>
+            </div>
+            <div className="faq-grid">
+              {FAQS.map(([question, answer]) => (
+                <div key={question} className="faq-item"><h3>{question}</h3><p>{answer}</p></div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
-
-      <footer className="border-t border-[#E4E7E1] py-10">
-        <div className="max-w-5xl mx-auto px-7 flex flex-wrap justify-between gap-2.5 items-center">
-          <p className="text-xs text-[#5C6E65]" style={monoFont}>© 2026 Pageviz</p>
-          <div className="flex gap-5 text-xs text-[#5C6E65]" style={monoFont}>
-            <Link href="/privacy" className="hover:text-[#13221D]">Privacy</Link>
-            <Link href="/terms" className="hover:text-[#13221D]">Terms</Link>
-            <Link href="/refund" className="hover:text-[#13221D]">Refund</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Footer />
+    </>
   )
 }

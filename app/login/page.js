@@ -1,69 +1,66 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import AuthLayout, { PasswordInput } from '../_components/AuthLayout'
+import Icon from '../_components/Icon'
+import { useSoon } from '../_components/Toast'
 
+// Design: reference src/pages/auth.js → loginPage(). Auth: the app's existing Supabase sign-in.
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (typeof window !== 'undefined' && window.location.search.includes('signup')) setIsSignUp(true)
-  }, [])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const soon = useSoon()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  useEffect(() => {
+    // Old links (and CheckoutButton) still point at /login?signup=1 — sign-up now has its own page.
+    if (window.location.search.includes('signup')) router.replace('/signup')
+  }, [router])
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const field = event.currentTarget.querySelector('[name="email"]')
+    if (field && !field.checkValidity()) { setError('Please enter a valid email address.'); field.focus(); return }
     setError('')
     setLoading(true)
-    const { error } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
-    if (error) setError(error.message)
+    if (authError) setError(authError.message)
     else router.push('/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-dotted dark:bg-[#181818] flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <svg width="26" height="19" viewBox="0 0 28 20" fill="none">
-            <polyline points="2,16 10,10 18,12 26,3" stroke="#1F4A3D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="dark:stroke-[#34D399]" />
-            <circle cx="2" cy="16" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
-            <circle cx="10" cy="10" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
-            <circle cx="18" cy="12" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
-            <circle cx="26" cy="3" r="2.5" fill="#1F4A3D" className="dark:fill-[#34D399]" />
-          </svg>
-          <span className="font-semibold text-lg text-stone-900 dark:text-[#F9FAFB] tracking-tight">Pageviz</span>
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-[#14231E] border border-stone-200 dark:border-white/10 rounded-2xl p-8 space-y-4">
-          <div className="mb-2">
-            <h1 className="text-2xl font-bold text-stone-900 dark:text-[#F9FAFB] tracking-tight">{isSignUp ? 'Create your account' : 'Welcome back'}</h1>
-            <p className="text-sm text-stone-500 dark:text-[#A0B3AC] mt-1">{isSignUp ? 'Start tracking in under a minute.' : 'Log in to see your stats.'}</p>
-          </div>
-          <input type="email" placeholder="Email" value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-stone-300 dark:border-white/10 dark:bg-[#181818] dark:text-[#F9FAFB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F4A3D]/25 focus:border-[#1F4A3D] transition-colors" required />
-          <input type="password" placeholder="Password" value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-stone-300 dark:border-white/10 dark:bg-[#181818] dark:text-[#F9FAFB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F4A3D]/25 focus:border-[#1F4A3D] transition-colors" required />
-          {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
-          <button type="submit" disabled={loading}
-            className="w-full bg-[#1F4A3D] hover:bg-[#16362C] text-white rounded-lg px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50">
-            {loading ? 'Please wait...' : isSignUp ? 'Sign up' : 'Log in'}
-          </button>
-          <button type="button" onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-stone-500 dark:text-[#A0B3AC] hover:text-[#1F4A3D] dark:hover:text-[#34D399] underline block text-center w-full transition-colors">
-            {isSignUp ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
-          </button>
-        </form>
+    <AuthLayout variant="login">
+      <div className="auth-heading">
+        <h1>Log back in</h1>
+        <p>Good to see you again. Let&apos;s see how things are growing.</p>
       </div>
-    </div>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <div className="field">
+          <label htmlFor="email">Email address</label>
+          <input className="input" id="email" name="email" type="email" autoComplete="email" placeholder="you@yourstudio.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
+        </div>
+        <div className="field">
+          <div className="field-row">
+            <label htmlFor="password">Password</label>
+            {/* TODO: not wired yet — password reset. Needs supabase.auth.resetPasswordForEmail + a /reset-password page. */}
+            <button type="button" className="field-link" onClick={soon}>Forgot it?</button>
+          </div>
+          <PasswordInput autoComplete="current-password" placeholder="Your password" value={password} onChange={(event) => setPassword(event.target.value)} />
+        </div>
+        <div className="form-slot">{error && <div className="form-message error">{error}</div>}</div>
+        <button type="submit" disabled={loading} className="button button-primary full-width button-large">
+          {loading ? 'Please wait…' : <>Log in <Icon name="arrow-right" /></>}
+        </button>
+      </form>
+      <div className="auth-divider"><span>or</span></div>
+      <Link href="/demo" className="button button-secondary full-width"><Icon name="circle-play" />Skip in and explore the demo</Link>
+      <p className="auth-alt">New here? <Link href="/signup">Create a free account</Link></p>
+    </AuthLayout>
   )
 }

@@ -36,6 +36,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# reference design build (unzipped for porting, never commit)
+/_design-ref/
+
+# session working notes — local only, never commit
+/SESSION_HANDOFF.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
