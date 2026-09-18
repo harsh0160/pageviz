@@ -13,20 +13,42 @@
     if (localStorage.getItem('pv_excluded') === '1') return;
   } catch (e) {}
 
+  // Automated browsers (headless Chrome, test tools) are not real readers
+  if (navigator.webdriver) return;
+
   const origin = new URL(script.src).origin;
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-  fetch(origin + '/api/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      site_id: siteId,
-      page_url: window.location.pathname,
-      referrer: document.referrer || null,
-      device_type: isMobile ? 'Mobile' : 'Desktop',
-    }),
-    keepalive: true,
+  let lastPath = null;
+  function trackPageview(referrer) {
+    const path = window.location.pathname;
+    if (path === lastPath) return; // same page again (only #hash or ?query changed)
+    lastPath = path;
+    fetch(origin + '/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        site_id: siteId,
+        page_url: path,
+        referrer: referrer,
+        device_type: isMobile ? 'Mobile' : 'Desktop',
+      }),
+      keepalive: true,
+    });
+  }
+  trackPageview(document.referrer || null);
+
+  // Single-page apps (React, Vue, Next.js...) change the URL without reloading the
+  // page, so also count those moves. In-app moves have no outside referrer.
+  ['pushState', 'replaceState'].forEach(function(method) {
+    const original = history[method];
+    history[method] = function() {
+      const result = original.apply(this, arguments);
+      trackPageview(null);
+      return result;
+    };
   });
+  window.addEventListener('popstate', function() { trackPageview(null); });
 
   // Custom events: site owners call window.pageviz('signup') from their own
   // buttons/forms to track a named goal, e.g.:

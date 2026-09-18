@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Icon from '../Icon'
 import { copyText, useSoon } from '../Toast'
 import { SoonBadge } from '../ui'
+import { PasswordInput } from '../AuthLayout'
 import { PLANS } from '@/lib/plans'
 import { cleanDomain } from '@/lib/analytics'
 import { useWorkspace, installSnippet } from './context'
@@ -87,7 +88,7 @@ export function SetupDialog({ siteId }) {
     <>
       <DialogHeader title="Add your snippet" subtitle={`Paste this into ${site.domain} to start counting.`} />
       <ol className="install-steps">
-        <li><div><strong>Copy the snippet below</strong><p>One small script, under 1 KB.</p></div></li>
+        <li><div><strong>Copy the snippet below</strong><p>One small script, about 1.5 KB.</p></div></li>
         <li><div><strong>Paste it into your HTML</strong><p>Just before the closing &lt;/head&gt; tag, on every page.</p></div></li>
         <li><div><strong>Publish and wait a beat</strong><p>Your first visit will appear within seconds.</p></div></li>
       </ol>
@@ -190,10 +191,33 @@ export function SiteMenuDialog({ siteId, onExport }) {
         <button type="button" className="menu-item" onClick={() => ws.openDialog(<SetupDialog siteId={site.id} />)}>
           <Icon name="code-xml" /><span><strong>Installation snippet</strong><small>Re-copy your tracking code</small></span><Icon name="chevron-right" />
         </button>
-        {/* TODO: not wired yet — removing a site. Needs a sites DELETE (RLS policy for the owner) and cleanup of its pageviews/events/heartbeats. */}
-        <button type="button" className="menu-item menu-item-danger" onClick={soon}>
+        <button type="button" className="menu-item menu-item-danger" onClick={ws.isDemo ? soon : () => ws.openDialog(<RemoveSiteDialog siteId={site.id} />)}>
           <Icon name="x" /><span><strong>Remove site</strong><small>Delete this site and its data</small></span>
         </button>
+      </div>
+    </>
+  )
+}
+
+export function RemoveSiteDialog({ siteId }) {
+  const ws = useWorkspace()
+  const [removing, setRemoving] = useState(false)
+  const site = ws.getSite(siteId)
+  if (!site) return null
+
+  const confirm = async () => {
+    setRemoving(true)
+    const ok = await ws.actions.removeSite(siteId)
+    setRemoving(false)
+    if (ok) ws.closeDialog()
+  }
+
+  return (
+    <>
+      <DialogHeader title="Remove this site?" subtitle={`${site.name} and all its pageviews, events and share settings will be deleted. This can't be undone.`} />
+      <div className="dialog-footer">
+        <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Cancel</button>
+        <button type="button" disabled={removing} className="button button-danger" onClick={confirm}>{removing ? 'Removing…' : 'Remove site'}</button>
       </div>
     </>
   )
@@ -242,6 +266,40 @@ export function WorkspaceDialog() {
           ? <Link className="button button-secondary" href="/" onClick={ws.closeDialog}><Icon name="log-out" />Log out</Link>
           : <button type="button" className="button button-secondary" onClick={() => { ws.closeDialog(); ws.actions.logout() }}><Icon name="log-out" />Log out</button>}
       </div>
+    </>
+  )
+}
+
+export function ChangePasswordDialog() {
+  const ws = useWorkspace()
+  const [password, setPassword] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const save = async (event) => {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    const message = await ws.actions.changePassword(password)
+    setSaving(false)
+    if (message) setError(message)
+    else ws.closeDialog()
+  }
+
+  return (
+    <>
+      <DialogHeader title="Change password" subtitle="Choose a new password for your account." />
+      <form className="settings-form dialog-section" onSubmit={save}>
+        <div className="field">
+          <label htmlFor="new-password">New password</label>
+          <PasswordInput id="new-password" autoComplete="new-password" placeholder="At least 8 characters" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
+        </div>
+        {error && <div className="form-message error">{error}</div>}
+        <div className="dialog-footer">
+          <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Cancel</button>
+          <button type="submit" disabled={saving || password.length < 8} className="button button-primary">{saving ? 'Saving…' : 'Update password'}</button>
+        </div>
+      </form>
     </>
   )
 }

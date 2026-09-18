@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import AuthLayout, { PasswordInput } from '../_components/AuthLayout'
 import Icon from '../_components/Icon'
-import { useSoon } from '../_components/Toast'
 
 // Design: reference src/pages/auth.js → loginPage(). Auth: the app's existing Supabase sign-in.
 export default function LoginPage() {
@@ -15,7 +14,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const soon = useSoon()
 
   useEffect(() => {
     // Old links (and CheckoutButton) still point at /login?signup=1 — sign-up now has its own page.
@@ -48,8 +46,7 @@ export default function LoginPage() {
         <div className="field">
           <div className="field-row">
             <label htmlFor="password">Password</label>
-            {/* TODO: not wired yet — password reset. Needs supabase.auth.resetPasswordForEmail + a /reset-password page. */}
-            <button type="button" className="field-link" onClick={soon}>Forgot it?</button>
+            <Link href="/forgot-password" className="field-link">Forgot it?</Link>
           </div>
           <PasswordInput autoComplete="current-password" placeholder="Your password" value={password} onChange={(event) => setPassword(event.target.value)} />
         </div>

@@ -45,6 +45,10 @@ export default function GuidePage() {
             </ol>
             <div className="guide-cta">
               <GuideSnippet />
+              <div className="inline-note">
+                <Icon name="info" />
+                <span>Don&apos;t want your own pageviews counted? Open your site once with <code>?pv_exclude=1</code> at the end of the address, for example <code>yoursite.com/?pv_exclude=1</code>. That browser is ignored from then on.</span>
+              </div>
               <Link className="button button-primary button-large" href="/signup">Start for free <Icon name="arrow-up-right" /></Link>
             </div>
           </div>

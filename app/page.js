@@ -15,7 +15,7 @@ export const metadata = {
 const FEATURES = [
   ['sparkles', 'The gist, at a glance', 'Open your dashboard and see how your site is doing in about three seconds. No setup rabbit holes, no dashboards you need a manual to read.'],
   ['cookie', 'No cookies, no banners', 'Pageviz never uses cookies or collects personal data, so you can skip the consent banner and your visitors can just enjoy your work.'],
-  ['leaf', 'A lighter footprint', 'Our script is under 1 KB and our servers run lean. Analytics that measure your growth without weighing down the planet.'],
+  ['leaf', 'A lighter footprint', 'Our script is about 1.5 KB and our servers run lean. Analytics that measure your growth without weighing down the planet.'],
   ['activity', 'Live, when it matters', 'Watch pageviews arrive in real time during a launch, then let it fade into the background the rest of the week.'],
   ['mouse-pointer-2', 'Events worth counting', 'Track the moments that mean something, like a signup or a contact click, without turning your site into a surveillance machine.'],
   ['link', 'Made to be shared', 'Send a clean, password-protected link to a client or a collaborator. They see the numbers, not your login.'],
@@ -127,7 +127,7 @@ export default function Home() {
                 </ul>
               </div>
               <div className="why-stats">
-                <div className="stat-tile"><strong>&lt; 1 KB</strong><span>Script size, so pages stay quick.</span></div>
+                <div className="stat-tile"><strong>~1.5 KB</strong><span>Script size, so pages stay quick.</span></div>
                 <div className="stat-tile"><strong>0</strong><span>Cookies set, banners needed, or dark patterns.</span></div>
                 <div className="stat-tile"><strong>1 min</strong><span>To go from sign up to your first pageview.</span></div>
                 <div className="stat-tile stat-tile-accent"><strong>100%</strong><span>Yours. Export your data whenever you like.</span></div>

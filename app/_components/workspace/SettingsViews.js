@@ -10,7 +10,7 @@ import { useThemePreference } from '@/lib/theme'
 import { CONTACT_EMAIL, PLANS, PLAN_ORDER } from '@/lib/plans'
 import AppShell from './AppShell'
 import { useWorkspace } from './context'
-import { PlanPreviewDialog } from './dialogs'
+import { ChangePasswordDialog, PlanPreviewDialog } from './dialogs'
 
 // The reference's src/pages/settings.js (plus the sidebar's Team members item).
 
@@ -115,16 +115,22 @@ export function AccountView() {
   const fullName = ws.user?.fullName || ws.user?.name || ''
   const [name, setName] = useState(fullName)
   const [email, setEmail] = useState(ws.user?.email || '')
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState(null)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(fullName); setEmail(ws.user?.email || '')
   }, [fullName, ws.user?.email])
 
-  const save = (event) => {
+  const save = async (event) => {
     event.preventDefault()
-    if (ws.isDemo) ws.toast('Changes saved', { icon: 'check' })
-    // TODO: not wired yet — saving name/email. Needs supabase.auth.updateUser({ data: { name } }) and the email-change confirmation flow.
-    else soon()
+    if (ws.isDemo) { ws.toast('Changes saved', { icon: 'check' }); return }
+    setSaving(true)
+    setMessage(null)
+    const result = await ws.actions.updateAccount(name.trim(), email.trim())
+    setSaving(false)
+    if (result.error) setMessage({ text: result.error, error: true })
+    else if (result.notice) setMessage({ text: result.notice })
   }
 
   return (
@@ -139,16 +145,16 @@ export function AccountView() {
         </div>
         <form className="settings-form" onSubmit={save}>
           <div className="field-pair">
-            <div className="field"><label htmlFor="acc-name">Name</label><input className="input" id="acc-name" value={name} onChange={(event) => setName(event.target.value)} /></div>
-            <div className="field"><label htmlFor="acc-email">Email</label><input className="input" id="acc-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></div>
+            <div className="field"><label htmlFor="acc-name">Name</label><input className="input" id="acc-name" value={name} onChange={(event) => setName(event.target.value)} required /></div>
+            <div className="field"><label htmlFor="acc-email">Email</label><input className="input" id="acc-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
           </div>
-          <button type="submit" className="button button-primary">Save changes <Icon name="check" /></button>
+          {message && <div className={`form-message${message.error ? ' error' : ''}`}>{message.text}</div>}
+          <button type="submit" disabled={saving} className="button button-primary">{saving ? 'Saving…' : <>Save changes <Icon name="check" /></>}</button>
         </form>
       </section>
       <section className="settings-card">
         <div className="settings-card-head"><h2>Password</h2><p>Keep your quiet corner secure.</p></div>
-        {/* TODO: not wired yet — change password. Needs supabase.auth.updateUser({ password }) behind a re-auth step. */}
-        <button type="button" className="button button-secondary" onClick={soon}><Icon name="key-round" />Change password</button>
+        <button type="button" className="button button-secondary" onClick={ws.isDemo ? soon : () => ws.openDialog(<ChangePasswordDialog />)}><Icon name="key-round" />Change password</button>
       </section>
       <section className="settings-card settings-card-danger">
         <div className="settings-card-head"><h2>Close account</h2><p>Delete your workspace and all its data. This can&apos;t be undone.</p></div>

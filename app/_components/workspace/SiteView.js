@@ -7,7 +7,8 @@ import { BackLink, ChartCard, GrowthBadge, LiveBadge, MetricCard, RangePicker, S
 import { formatNumber } from '@/lib/analytics'
 import AppShell from './AppShell'
 import { useWorkspace, usePageTitle } from './context'
-import { EventsDialog, SetupDialog, ShareDialog, SiteMenuDialog } from './dialogs'
+import { EventsDialog, RemoveSiteDialog, SetupDialog, ShareDialog, SiteMenuDialog } from './dialogs'
+import { useSoon } from '../Toast'
 
 // The reference's sitePage() + setupContent() from src/pages/app.js.
 export default function SiteView({ siteId }) {
@@ -120,6 +121,7 @@ function EventsCard({ site, stats }) {
 
 function SetupContent({ site }) {
   const ws = useWorkspace()
+  const soon = useSoon()
   return (
     <>
       <BackLink href={ws.paths.home}>All your sites</BackLink>
@@ -136,6 +138,9 @@ function SetupContent({ site }) {
           <p>This page will bloom with data the moment someone lands on your site.</p>
         </div>
       </div>
+      <p style={{ textAlign: 'center' }}>
+        <button type="button" className="text-link" onClick={ws.isDemo ? soon : () => ws.openDialog(<RemoveSiteDialog siteId={site.id} />)}>Remove this site</button>
+      </p>
     </>
   )
 }

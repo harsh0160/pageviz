@@ -54,7 +54,8 @@ export default function SignupPage() {
         </div>
         <label className="check-row">
           <input type="checkbox" name="terms" checked={terms} onChange={(event) => setTerms(event.target.checked)} required />
-          <span>I agree to the <Link href="/terms">terms</Link> and <Link href="/privacy">privacy policy</Link>.</span>
+          {/* One shared tab name: the first click opens a new tab, the next one reuses it. */}
+          <span>I agree to the <Link href="/terms" target="pageviz-legal">terms</Link> and <Link href="/privacy" target="pageviz-legal">privacy policy</Link>.</span>
         </label>
         <div className="form-slot">{error && <div className="form-message error">{error}</div>}</div>
         <button type="submit" disabled={loading} className="button button-primary full-width button-large">

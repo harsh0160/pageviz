@@ -4,6 +4,7 @@ import './styles/marketing.css'
 import './styles/app.css'
 import { ToastProvider } from './_components/Toast'
 import ThemeWatcher from './_components/ThemeWatcher'
+import SiteTracker from './_components/SiteTracker'
 
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
@@ -41,6 +42,7 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <ThemeWatcher />
+        <SiteTracker />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

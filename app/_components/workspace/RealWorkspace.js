@@ -43,7 +43,8 @@ export default function RealWorkspace({ children }) {
       const [plan, siteList] = await Promise.all([loadProfilePlan(user.id), loadSites(user.id)])
       const withTracking = await Promise.all(siteList.map(async (site) => ({ ...site, tracking: (await countPageviews(site.id).catch(() => 0)) > 0 })))
       if (cancelled) return
-      const nextAccount = { id: user.id, email: user.email, name: displayName(user), planKey: plan }
+      // savedName is what is actually stored; name falls back to the email prefix, so compare against savedName.
+      const nextAccount = { id: user.id, email: user.email, name: displayName(user), savedName: user.user_metadata?.name || '', planKey: plan }
       setAccount(nextAccount)
       setSites(withTracking)
       cache = { ...(cache || {}), account: nextAccount, sites: withTracking }
@@ -122,6 +123,21 @@ export default function RealWorkspace({ children }) {
       setSites((current) => [toSite(data, current.length, false), ...current])
       return data.id
     },
+    async removeSite(siteId) {
+      // Clean up the site's own data first, in case the DB doesn't cascade-delete it.
+      await Promise.all([
+        supabase.from('pageviews').delete().eq('site_id', siteId),
+        supabase.from('events').delete().eq('site_id', siteId),
+        supabase.from('heartbeats').delete().eq('site_id', siteId),
+      ])
+      const { error } = await supabase.from('sites').delete().eq('id', siteId)
+      if (error) { toast(error.message, { icon: 'info' }); return false }
+      setSites((current) => current.filter((site) => site.id !== siteId))
+      if (cache) cache.sites = cache.sites.filter((site) => site.id !== siteId)
+      toast('Site removed', { icon: 'check' })
+      router.push(buildPaths('real').home)
+      return true
+    },
     async verifyInstall(siteId) {
       const count = await countPageviews(siteId).catch(() => 0)
       if (count > 0) {
@@ -155,6 +171,31 @@ export default function RealWorkspace({ children }) {
       await supabase.auth.signOut()
       cache = null
       router.push('/login')
+    },
+    // Returns { error } or { notice } so the form can show it inline (toasts vanish too fast).
+    async updateAccount(name, email) {
+      const updates = {}
+      if (name && name !== account.savedName) updates.data = { name }
+      if (email && email !== account.email) updates.email = email
+      if (!updates.data && !updates.email) return {}
+      const { error } = await supabase.auth.updateUser(updates)
+      if (error) return { error: error.message }
+      if (updates.data) {
+        setAccount((current) => ({ ...current, name, savedName: name }))
+        if (cache) cache.account = { ...cache.account, name, savedName: name }
+      }
+      toast('Changes saved', { icon: 'check' })
+      // Changing the email needs a confirmation click before it takes effect, so the account's
+      // email stays the old one until the link is opened. Supabase may also mail the old address.
+      if (updates.email) return { notice: `We sent a confirmation link to ${updates.email}. Open it, and open the one sent to your current email too if you got one. Your email changes only after that.` }
+      return {}
+    },
+    // Returns the error message, or null when the password was updated.
+    async changePassword(password) {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) return error.message
+      toast('Password updated', { icon: 'check' })
+      return null
     },
   }), [account, planKey, router, toast, celebrate])
 
