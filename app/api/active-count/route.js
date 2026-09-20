@@ -20,5 +20,17 @@ export async function GET(req) {
     .gte('last_seen_at', fiveMinAgo)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Every page load invents a fresh visitor_ref, so the heartbeats table grows as
+  // fast as pageviews do while only the last five minutes are ever read -- on a free
+  // Supabase project that dead weight eventually fills the database. Sweep it here,
+  // where the service-role key already is, on roughly one call in fifty: often enough
+  // to keep the table small, rare enough to cost nothing, and no extra cron to forget.
+  if (Math.random() < 0.02) {
+    const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { error: sweepError } = await supabaseAdmin.from('heartbeats').delete().lt('last_seen_at', anHourAgo)
+    if (sweepError) console.error('Heartbeat sweep failed:', sweepError.message)
+  }
+
   return NextResponse.json({ active: count || 0 })
 }
