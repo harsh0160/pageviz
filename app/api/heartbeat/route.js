@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { corsHeaders, shouldIgnore, preflight } from '../../../lib/ingest'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,7 +9,10 @@ const supabase = createClient(
 export async function POST(req) {
   const { site_id, visitor_ref } = await req.json()
   if (!site_id || !visitor_ref) {
-    return NextResponse.json({ error: 'Missing site_id or visitor_ref' }, { status: 400 })
+    return Response.json({ error: 'Missing site_id or visitor_ref' }, { status: 400, headers: corsHeaders })
+  }
+  if (shouldIgnore(req, 'heartbeat', site_id)) {
+    return Response.json({ ok: true }, { headers: corsHeaders })
   }
 
   // One row per (site, visitor) pair, timestamp bumped on every heartbeat.
@@ -20,6 +23,8 @@ export async function POST(req) {
     .from('heartbeats')
     .upsert({ site_id, visitor_ref, last_seen_at: new Date().toISOString() }, { onConflict: 'site_id,visitor_ref' })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true })
+  if (error) return Response.json({ error: error.message }, { status: 500, headers: corsHeaders })
+  return Response.json({ ok: true }, { headers: corsHeaders })
 }
+
+export const OPTIONS = preflight

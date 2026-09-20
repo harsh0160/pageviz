@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { tooMany, clientIp } from '../../../lib/rate-limit'
 const hashPassword = (pw) => crypto.createHash('sha256').update(pw).digest('hex')
 // IMPORTANT: this route uses the Supabase SERVICE ROLE key, not the anon key,
 // so it can read site/pageview rows even after RLS is locked down to stop
@@ -27,12 +28,17 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // NOTE: password is stored as plain text right now (see dashboard save
-  // handler) -- fine for a low-stakes "gate a shared stats page" feature,
-  // but flagging honestly rather than calling it a hash like the old comment
-  // here did. Worth hashing (e.g. Web Crypto SHA-256 client-side before the
-  // update() call, compare hashes here) if this ever needs to be stronger.
-if (site.share_password && site.share_password !== hashPassword(password || '')) {
+  // The password is stored as a SHA-256 hash (the dashboard hashes it before saving)
+  // and compared as a hash here. It is unsalted, which is fine for a low-stakes
+  // "gate a shared stats page" feature but worth strengthening if it ever guards more.
+  if (site.share_password && site.share_password !== hashPassword(password || '')) {
+    // That password is the only thing in front of a private page, so cap guessing:
+    // 10 wrong tries a minute per IP per site. A correct password never counts,
+    // so nobody gets locked out of a page they can actually open.
+    const ip = clientIp(req)
+    if (ip && tooMany(`share:${ip}:${siteId}`, 10)) {
+      return NextResponse.json({ error: 'Too many attempts. Wait a minute and try again.', needsPassword: true }, { status: 429 })
+    }
     return NextResponse.json({ error: 'Incorrect password', needsPassword: true }, { status: 401 })
   }
 

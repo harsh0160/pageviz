@@ -50,6 +50,15 @@
   });
   window.addEventListener('popstate', function() { trackPageview(null); });
 
+  // Going back or forward can restore a whole page from the browser's own cache
+  // without re-running this script, so the view above never fires. The reader did
+  // leave and come back, so clear lastPath and count that return as a pageview.
+  window.addEventListener('pageshow', function(event) {
+    if (!event.persisted) return;
+    lastPath = null;
+    trackPageview(null);
+  });
+
   // Custom events: site owners call window.pageviz('signup') from their own
   // buttons/forms to track a named goal, e.g.:
   //   <button onclick="pageviz('signup')">Sign up</button>

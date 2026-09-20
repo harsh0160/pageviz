@@ -23,6 +23,8 @@ export default function SignupPage() {
     event.preventDefault()
     const field = event.currentTarget.querySelector('[name="email"]')
     if (field && !field.checkValidity()) { setError('Please enter a valid email address.'); field.focus(); return }
+    // The form is noValidate, so the password input's own minLength never fires.
+    if (password.length < 8) { setError('Please use a password of at least 8 characters.'); return }
     if (!terms) { setError('Please accept the terms to continue.'); return }
     setError('')
     setLoading(true)

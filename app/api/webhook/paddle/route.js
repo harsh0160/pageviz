@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { PRICE_TO_PLAN } from '@/lib/paddle-prices'
+import { alertOwner } from '@/lib/alert'
 
 // Service-role client — bypasses Row Level Security. This is intentional:
 // Paddle's server has no Supabase login, so the only way it can write a
@@ -71,7 +72,14 @@ export async function POST(request) {
     const userId = data.custom_data?.user_id
 
     if (!userId) {
-      console.error('Paddle webhook: missing custom_data.user_id', event.event_id)
+      // Somebody may have just paid and there is no way to tell whose account
+      // to upgrade, so this has to reach a human rather than only a log.
+      await alertOwner('subscription event with no user_id', {
+        event_id: event.event_id,
+        event_type: event.event_type,
+        customer_id: data.customer_id,
+        subscription_id: data.id,
+      })
       return Response.json({ received: true })
     }
 
@@ -102,13 +110,20 @@ export async function POST(request) {
     })
 
     if (error) {
-      console.error('Paddle webhook: profile upsert failed', error)
+      // Paddle retries a 500, so this may still fix itself. Say so in the alert
+      // rather than sounding an alarm the owner has to act on immediately.
+      await alertOwner('could not save a plan change (Paddle will retry)', {
+        user_id: userId,
+        plan,
+        event_id: event.event_id,
+        db_error: error.message,
+      })
       return Response.json({ error: error.message }, { status: 500 })
     }
 
     return Response.json({ received: true, plan })
   } catch (err) {
-    console.error('Paddle webhook crashed:', err)
+    await alertOwner('webhook crashed', { message: err?.message })
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
