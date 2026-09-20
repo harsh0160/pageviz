@@ -53,11 +53,19 @@ export async function POST(req) {
   const RETENTION_DAYS = { free: 7, pro: 365, business: null }
   const retentionDays = RETENTION_DAYS[plan] ?? RETENTION_DAYS.free
 
+  // Newest-first with an explicit cap. Ordered the other way round, PostgREST's
+  // 1,000-row default silently handed back the OLDEST thousand rows, so a busy
+  // shared page showed numbers from weeks ago and looked plainly wrong. The rows
+  // are flipped back to oldest-first below because the page charts them that way.
+  // NOTE: Supabase also enforces its own "Max rows" setting (Settings → API);
+  // if that is lower than this cap, that setting wins.
+  const SHARE_ROW_CAP = 50000
   let query = supabaseAdmin
     .from('pageviews')
     .select('page_url, referrer, device_type, created_at')
     .eq('site_id', siteId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(SHARE_ROW_CAP)
 
   if (retentionDays !== null) {
     const since = new Date()
@@ -65,11 +73,12 @@ export async function POST(req) {
     query = query.gte('created_at', since.toISOString())
   }
 
-  const { data: pageviews } = await query
+  const { data: newestFirst } = await query
+  const pageviews = (newestFirst || []).reverse()
 
   // Strip the password AND the owner's internal user_id out before this
   // ever reaches the browser -- user_id only got added above for the
   // retention lookup, it was never meant to be public.
   const { share_password, user_id, ...publicSite } = site
-  return NextResponse.json({ site: publicSite, pageviews: pageviews || [], retentionDays })
+  return NextResponse.json({ site: publicSite, pageviews, retentionDays })
 }
