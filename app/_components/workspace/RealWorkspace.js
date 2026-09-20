@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { planFor, isPaidPlan, isMaxPlan } from '@/lib/plans'
 import {
-  rangeWindow, rangeAllowed, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv,
+  rangeWindow, rangeAllowed, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv, downloadCombinedCsv,
 } from '@/lib/analytics'
 import {
   loadProfile, loadSites, toSite, countPageviews, fetchSitePageviews, fetchPageviewTimes, fetchSiteEvents, fetchActiveCount,
@@ -202,6 +202,23 @@ export default function RealWorkspace({ children }) {
       downloadPageviewsCsv(site, rows || [], currentRange)
       toast('CSV export started', { icon: 'download' })
     },
+    // Every site in one file. Unlike the per-site export, the rows are not already on
+    // screen, so they are fetched here -- one request per site, which is at most 30.
+    async exportAllCsv(currentRange) {
+      if (!isMaxPlan(planKey)) { router.push(buildPaths('real').pricing); return }
+      if (!sites.length) { toast('No sites to export yet', { icon: 'info' }); return }
+      toast('Gathering every site…', { icon: 'download' })
+      try {
+        const since = rangeWindow(currentRange).start
+        const sections = await Promise.all(
+          sites.map(async (site) => ({ site, pageviews: await fetchSitePageviews(site.id, since) }))
+        )
+        downloadCombinedCsv(sections, currentRange)
+        toast('CSV export started', { icon: 'download' })
+      } catch (err) {
+        toast('Could not build the export. Please try again.', { icon: 'info' })
+      }
+    },
     async logout() {
       await supabase.auth.signOut()
       cache = null
@@ -232,7 +249,7 @@ export default function RealWorkspace({ children }) {
       toast('Password updated', { icon: 'check' })
       return null
     },
-  }), [account, planKey, router, toast, celebrate])
+  }), [account, planKey, sites, router, toast, celebrate])
 
   const totalLive = Object.values(live).reduce((sum, value) => sum + (value || 0), 0)
 

@@ -58,6 +58,7 @@ export default function DemoWorkspace({ children }) {
         setPasswordEnabled: (id, enabled) => { demoActions.setPasswordEnabled(id, enabled); toast(enabled ? 'Password protection on' : 'Password protection off', { icon: 'lock' }) },
         enableEvents: (id) => { demoActions.enableEvents(id); toast('Events turned on', { icon: 'mouse-pointer-2' }) },
         exportCsv: () => toast('CSV export started (demo)', { icon: 'download' }),
+        exportAllCsv: () => toast('CSV export started (demo)', { icon: 'download' }),
         setDigest: (digest) => { demoActions.setDigest(digest); toast(digest ? 'Weekly digest on' : 'Weekly digest off', { icon: 'mail' }) },
         setPlan: demoActions.setPlan,
         logout: async () => {},

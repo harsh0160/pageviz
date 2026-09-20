@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import Icon from '../Icon'
-import { useSoon } from '../Toast'
 import { BackLink, ChartCard, GrowthBadge, MetricCard, RangePicker, SiteAvatar } from '../ui'
 import { formatNumber, dateLabel } from '@/lib/analytics'
 import { demoDateLabel } from '@/lib/demo-store'
@@ -14,7 +13,6 @@ import { PlanPreviewDialog } from './dialogs'
 export default function OverviewView() {
   const ws = useWorkspace()
   const stats = ws.hooks.useOverviewStats(ws)
-  const soon = useSoon()
 
   if (!ws.ready) return <AppShell />
   const { paths } = ws
@@ -48,8 +46,7 @@ export default function OverviewView() {
         </div>
         <div className="page-head-actions">
           <RangePicker range={ws.range} onChange={ws.setRange} planKey={ws.planKey} />
-          {/* TODO: not wired yet (real workspace) — combined CSV for every site. Needs an export that joins pageviews with site names; per-site export already works. */}
-          <button type="button" className="button button-secondary" onClick={ws.isDemo ? () => ws.actions.exportCsv() : soon}><Icon name="download" />Export all</button>
+          <button type="button" className="button button-secondary" onClick={() => ws.actions.exportAllCsv(ws.range)}><Icon name="download" />Export all</button>
         </div>
       </div>
 
