@@ -69,7 +69,7 @@ export function AddSiteDialog() {
           <div className="input-with-icon"><Icon name="globe" /><input className="input" id="new-domain" placeholder="example.com" value={domain} onChange={(event) => setDomain(event.target.value)} required /></div>
           <small>Just the domain, no https:// needed.</small>
         </div>
-        <div className="inline-note"><Icon name="leaf" /><span>Your new site starts cookie-free and empty, ready for its first visitor.</span></div>
+        <div className="inline-note"><Icon name="leaf" /><span>Your new site starts cookie-free and empty, ready for its first pageview.</span></div>
         <div className="dialog-footer">
           <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Cancel</button>
           <button type="submit" className="button button-primary" disabled={saving}>{saving ? 'Creating…' : <>Create site <Icon name="arrow-right" /></>}</button>

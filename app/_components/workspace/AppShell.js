@@ -66,7 +66,7 @@ export default function AppShell({ active = 'sites', crumb = 'Your sites', child
             <Link key={site.id} href={paths.site(site.id)} className={`sidebar-site ${active === site.id ? 'active' : ''}`}>
               <SiteAvatar site={site} size="avatar-tiny" />
               <span>{site.name}</span>
-              {site.tracking === false && <span className="waiting-dot" title="Awaiting first visitor"></span>}
+              {site.tracking === false && <span className="waiting-dot" title="Awaiting first pageview"></span>}
             </Link>
           ))}
         </nav>

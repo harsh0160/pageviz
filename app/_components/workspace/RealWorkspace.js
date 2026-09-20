@@ -179,7 +179,7 @@ export default function RealWorkspace({ children }) {
         setSites((current) => current.map((site) => (site.id === siteId ? { ...site, tracking: true } : site)))
         celebrate(siteId)
       } else {
-        toast('Listening for your first visitor…', { icon: 'activity' })
+        toast('Listening for your first pageview…', { icon: 'activity' })
       }
     },
     async setShared(siteId, shared) {

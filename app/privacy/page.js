@@ -60,6 +60,7 @@ export default function PrivacyPage() {
       <p>If we make material changes to this policy, we&apos;ll notify you by email or through the dashboard before they take effect.</p>
 
       <h2>11. Contact</h2>
+      <p>Pageviz is an independent service operated from India. It decides how the data described here is handled, and is the right place to send any request about it.</p>
       <p>Questions about this policy or your data? Reach us at <strong>{CONTACT_EMAIL}</strong>.</p>
     </LegalPage>
   )

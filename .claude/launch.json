@@ -4,8 +4,27 @@
     {
       "name": "pageviz-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "-p", "35870"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "35870"
+      ],
       "port": 35870,
+      "autoPort": false
+    },
+    {
+      "name": "pageviz-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start",
+        "--",
+        "-p",
+        "35871"
+      ],
+      "port": 35871,
       "autoPort": false
     }
   ]

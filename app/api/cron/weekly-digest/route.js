@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { PUBLIC_ORIGIN } from '@/lib/plans'
 
 // Protected cron endpoint — trigger weekly from an EXTERNAL scheduler
 // (UptimeRobot, which you already use, or a free service like cron-job.org).
@@ -67,7 +68,7 @@ export async function POST(req) {
             <h2 style="color:#13221D">Your week in review</h2>
             <p style="font-size:28px;font-weight:700;color:#1F4A3D;margin:12px 0 4px">${thisWeek.toLocaleString()} pageviews${trendLine}</p>
             <p style="color:#5C6E65;font-size:14px">across ${sites.length} site${sites.length !== 1 ? 's' : ''}: ${sites.map((s) => s.name).join(', ')}</p>
-            <a href="https://pageviz.netlify.app/dashboard" style="display:inline-block;background:#E64A12;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;margin-top:16px">View full dashboard</a>
+            <a href="${PUBLIC_ORIGIN}/dashboard" style="display:inline-block;background:#2c5239;color:#fbfcf6;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;margin-top:16px">View full dashboard</a>
             <p style="color:#9CA3AF;font-size:11px;margin-top:32px">You're receiving this because you have an active Pageviz account. Reply to this email or write to pagevizofficial@gmail.com to stop these.</p>
           </div>
         `,

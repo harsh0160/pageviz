@@ -134,7 +134,7 @@ function SetupContent({ site }) {
       <div className="setup-waiting">
         <div className="waiting-pulse"><Icon name="activity" /></div>
         <div>
-          <strong>Listening for your first visitor&hellip;</strong>
+          <strong>Listening for your first pageview&hellip;</strong>
           <p>This page will bloom with data the moment someone lands on your site.</p>
         </div>
       </div>

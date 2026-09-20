@@ -52,6 +52,7 @@ export default function TermsPage() {
       <p>These Terms are governed by the laws of <strong>India</strong>, without regard to conflict-of-law principles.</p>
 
       <h2>12. Contact</h2>
+      <p>Pageviz is an independent service operated from India.</p>
       <p>Questions about these Terms? Reach us at <strong>{CONTACT_EMAIL}</strong>.</p>
     </LegalPage>
   )
