@@ -37,6 +37,8 @@ export default function DemoWorkspace({ children }) {
       plan: planFor(state.user.plan),
       isPaid: paid,
       isMax: isMaxPlan(state.user.plan),
+      // Demo has no Paddle subscription behind it, so there are no real links to give.
+      billing: { managementUrls: null, nextBilledAt: null },
       sites,
       allSites: state.sites,
       getSite: (id) => sites.find((site) => site.id === id),

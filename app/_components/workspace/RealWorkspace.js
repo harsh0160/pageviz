@@ -8,7 +8,7 @@ import {
   rangeWindow, rangeAllowed, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv,
 } from '@/lib/analytics'
 import {
-  loadProfilePlan, loadSites, toSite, countPageviews, fetchSitePageviews, fetchPageviewTimes, fetchSiteEvents, fetchActiveCount,
+  loadProfile, loadSites, toSite, countPageviews, fetchSitePageviews, fetchPageviewTimes, fetchSiteEvents, fetchActiveCount,
 } from '@/lib/workspace-queries'
 import { useToast } from '../Toast'
 import { WorkspaceContext, buildPaths, useDialogHost } from './context'
@@ -40,11 +40,11 @@ export default function RealWorkspace({ children }) {
       if (cancelled) return
       if (!data.user) { router.push('/login'); return }
       const user = data.user
-      const [plan, siteList] = await Promise.all([loadProfilePlan(user.id), loadSites(user.id)])
+      const [profile, siteList] = await Promise.all([loadProfile(user.id), loadSites(user.id)])
       const withTracking = await Promise.all(siteList.map(async (site) => ({ ...site, tracking: (await countPageviews(site.id).catch(() => 0)) > 0 })))
       if (cancelled) return
       // savedName is what is actually stored; name falls back to the email prefix, so compare against savedName.
-      const nextAccount = { id: user.id, email: user.email, name: displayName(user), savedName: user.user_metadata?.name || '', planKey: plan }
+      const nextAccount = { id: user.id, email: user.email, name: displayName(user), savedName: user.user_metadata?.name || '', planKey: profile.plan, managementUrls: profile.managementUrls, nextBilledAt: profile.nextBilledAt }
       setAccount(nextAccount)
       setSites(withTracking)
       cache = { ...(cache || {}), account: nextAccount, sites: withTracking }
@@ -69,12 +69,13 @@ export default function RealWorkspace({ children }) {
     toast('Payment received. Activating your plan…', { icon: 'activity' })
     const timer = setInterval(async () => {
       tries += 1
-      const plan = await loadProfilePlan(accountId).catch(() => null)
+      const profile = await loadProfile(accountId).catch(() => null)
       if (cancelled) return
-      if (plan && plan !== 'free') {
+      if (profile && profile.plan !== 'free') {
         clearInterval(timer)
-        setAccount((prev) => (prev ? { ...prev, planKey: plan } : prev))
-        if (cache?.account) cache.account = { ...cache.account, planKey: plan }
+        const paidBits = { planKey: profile.plan, managementUrls: profile.managementUrls, nextBilledAt: profile.nextBilledAt }
+        setAccount((prev) => (prev ? { ...prev, ...paidBits } : prev))
+        if (cache?.account) cache.account = { ...cache.account, ...paidBits }
         toast('Your plan is active. Thank you!', { celebration: true, icon: 'sprout' })
       } else if (tries >= 20) {
         // ~60s. The payment is Paddle's to keep either way, so say that plainly
@@ -245,6 +246,9 @@ export default function RealWorkspace({ children }) {
     plan: planFor(planKey),
     isPaid: paid,
     isMax: isMaxPlan(planKey),
+    // Paddle's own cancel / update-card pages, and the next charge date. Null until a
+    // subscription webhook has filled them in, so the UI must cope with not having them.
+    billing: { managementUrls: account?.managementUrls || null, nextBilledAt: account?.nextBilledAt || null },
     sites,
     getSite: (id) => sites.find((site) => site.id === id),
     range, setRange, compare, setCompare,

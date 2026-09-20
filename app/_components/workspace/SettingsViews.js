@@ -175,6 +175,17 @@ export function BillingView() {
   const usage = ws.sites.length
   const rank = (key) => PLAN_ORDER.indexOf(key)
 
+  // Paddle hosts cancelling and card updates on its own pages and gives us the links
+  // per subscription. They only exist after a subscription webhook has arrived, so
+  // everything below falls back to the old "Soon" behaviour when they are missing.
+  const managementUrls = ws.billing?.managementUrls
+  const cancelUrl = managementUrls?.cancel || null
+  const updateCardUrl = managementUrls?.update_payment_method || null
+  const nextBilledAt = ws.billing?.nextBilledAt
+  const renewalNote = nextBilledAt
+    ? `Renews on ${new Date(nextBilledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}. Receipts arrive by email.`
+    : 'Billing is handled by Paddle. Receipts arrive by email.'
+
   const planAction = (key) => {
     const item = PLANS[key]
     if (ws.isDemo) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<PlanPreviewDialog plan={key} />)}>Switch to {item.name}</button>
@@ -200,9 +211,13 @@ export function BillingView() {
           <div className="plan-current-foot">
             {ws.isDemo
               ? <span className="muted"><Icon name="info" />Demo mode &mdash; no real billing. Next renewal would be Oct 8, 2026.</span>
-              // TODO: not wired yet — renewal date. Needs next_billed_at from the Paddle subscription (webhook → profiles column).
-              : <span className="muted"><Icon name="info" />Billing is handled by Paddle. Receipts arrive by email.</span>}
-            <button type="button" className="text-link" onClick={ws.isDemo ? () => ws.openDialog(<PlanPreviewDialog plan="free" />) : soon}>Switch to Free</button>
+              : <span className="muted"><Icon name="info" />{renewalNote}</span>}
+            {updateCardUrl && !ws.isDemo && <a className="text-link" href={updateCardUrl} target="_blank" rel="noreferrer"><Icon name="credit-card" />Update payment method</a>}
+            {ws.isDemo
+              ? <button type="button" className="text-link" onClick={() => ws.openDialog(<PlanPreviewDialog plan="free" />)}>Switch to Free</button>
+              : cancelUrl
+                ? <a className="text-link" href={cancelUrl} target="_blank" rel="noreferrer">Cancel subscription</a>
+                : <button type="button" className="text-link" onClick={soon}>Switch to Free</button>}
           </div>
         ) : (
           <div className="plan-current-foot"><span className="muted"><Icon name="leaf" />You are on the free plan. No card on file, ever.</span></div>

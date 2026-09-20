@@ -101,13 +101,36 @@ export async function POST(request) {
       plan = PRICE_TO_PLAN[priceId] || 'free'
     }
 
-    const { error } = await supabaseAdmin.from('profiles').upsert({
+    const core = {
       id: userId,
       plan,
       paddle_customer_id: data.customer_id,
       paddle_subscription_id: data.id,
       paddle_synced_at: event.occurred_at,
+    }
+    // Paddle hosts the cancel and update-card pages itself and hands us the links per
+    // subscription. Storing them is what lets a customer leave without emailing us
+    // first -- the alternative is a chargeback, which costs far more than a churn.
+    let { error } = await supabaseAdmin.from('profiles').upsert({
+      ...core,
+      management_urls: data.management_urls || null,
+      next_billed_at: data.next_billed_at || null,
     })
+
+    // Those two columns are a later addition. If they are not there yet, saving the
+    // plan still matters far more than saving the links, so write the plan anyway
+    // rather than leaving a paying customer on free.
+    if (error) {
+      const retry = await supabaseAdmin.from('profiles').upsert(core)
+      if (!retry.error) {
+        await alertOwner('saved the plan but not the billing links', {
+          user_id: userId,
+          hint: 'add management_urls (jsonb) and next_billed_at (timestamptz) to profiles',
+          db_error: error.message,
+        })
+        error = null
+      }
+    }
 
     if (error) {
       // Paddle retries a 500, so this may still fix itself. Say so in the alert
