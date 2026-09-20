@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { trackGoal } from '@/lib/goal'
 import AuthLayout, { PasswordInput } from '../_components/AuthLayout'
 import Icon from '../_components/Icon'
 
@@ -31,10 +32,12 @@ export default function SignupPage() {
     // The name is saved to the user's metadata so the workspace can greet them by it.
     const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { name: name.trim() } } })
     setLoading(false)
-    if (authError) setError(authError.message)
+    if (authError) { setError(authError.message); return }
+    // A real account exists from here on, whichever way it continues -- count it once.
+    trackGoal('signup')
     // With email confirmation switched on, sign-up returns no session: the account only
     // works once the link is opened. Say that, instead of bouncing to a login that fails.
-    else if (!data.session) setSent(true)
+    if (!data.session) setSent(true)
     else router.push('/dashboard')
   }
 

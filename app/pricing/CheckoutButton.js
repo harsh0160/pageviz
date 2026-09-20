@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { loadPaddle } from '@/lib/paddle-loader'
 import { PLAN_TO_PRICE } from '@/lib/paddle-prices'
+import { trackGoal } from '@/lib/goal'
 
 export default function CheckoutButton({ plan, className, children, discountCode }) {
   const [status, setStatus] = useState('loading')
@@ -37,6 +38,10 @@ export default function CheckoutButton({ plan, className, children, discountCode
       router.push('/login?signup=1')
       return
     }
+
+    // The last step we can see ourselves: Paddle's overlay takes over from here,
+    // and the webhook tells us whether it ended in a payment.
+    trackGoal(`checkout_${plan}`)
 
     window.Paddle.Checkout.open({
       items: [{ priceId: PLAN_TO_PRICE[plan], quantity: 1 }],
