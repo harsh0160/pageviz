@@ -35,7 +35,12 @@ const themeScript = `(function(){try{var saved=localStorage.getItem('pv_theme')|
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light" data-scroll-behavior="smooth" className={`${instrumentSerif.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    // No data-theme attribute here on purpose. The script below sets it from the saved
+    // preference before first paint; writing it here too made React reconcile it back
+    // to "light" during hydration in production builds, silently throwing away the
+    // reader's choice on every reload. Without the attribute, CSS falls back to the
+    // light tokens on :root, which is the same default.
+    <html lang="en" data-scroll-behavior="smooth" className={`${instrumentSerif.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
