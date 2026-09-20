@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { corsHeaders, shouldIgnore, preflight } from '../../../lib/ingest'
+import { corsHeaders, shouldIgnore, preflight, isSiteId, readJson } from '../../../lib/ingest'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -7,10 +7,11 @@ const supabase = createClient(
 )
 
 export async function POST(req) {
-  const body = await req.json()
-  const { site_id, event_name } = body
+  const body = await readJson(req)
+  const site_id = body?.site_id
+  const event_name = body?.event_name
 
-  if (!site_id || !event_name) {
+  if (!isSiteId(site_id) || !event_name) {
     return Response.json({ error: 'Missing site_id or event_name' }, { status: 400, headers: corsHeaders })
   }
   if (shouldIgnore(req, 'event', site_id)) {
@@ -21,7 +22,11 @@ export async function POST(req) {
   const cleanName = String(event_name).slice(0, 64)
 
   const { error } = await supabase.from('events').insert({ site_id, event_name: cleanName })
-  if (error) return Response.json({ error: error.message }, { status: 500, headers: corsHeaders })
+  // Log the real reason, but never hand a stranger the database's own words.
+  if (error) {
+    console.error('Event insert failed:', error.message)
+    return Response.json({ error: 'Could not record event' }, { status: 500, headers: corsHeaders })
+  }
 
   return Response.json({ ok: true }, { headers: corsHeaders })
 }

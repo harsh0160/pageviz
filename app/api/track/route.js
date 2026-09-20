@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { corsHeaders, shouldIgnore, preflight } from '../../../lib/ingest'
+import { corsHeaders, shouldIgnore, preflight, isSiteId } from '../../../lib/ingest'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function POST(request) {
   try {
     const { site_id, page_url, referrer, device_type } = await request.json()
-    if (!site_id || !page_url) {
+    if (!isSiteId(site_id) || !page_url) {
       return Response.json({ error: 'Missing fields' }, { status: 400, headers: corsHeaders })
     }
     // A site id sits in plain sight in every snippet, so anything arriving here is a
@@ -24,13 +24,14 @@ export async function POST(request) {
     }
     const { error } = await supabase.from('pageviews').insert({ site_id, page_url: page, referrer: ref, device_type: device })
     if (error) {
-      console.error('Insert failed:', error)
-      return Response.json({ error: error.message }, { status: 500, headers: corsHeaders })
+      // Log the real reason, but never hand a stranger the database's own words.
+      console.error('Insert failed:', error.message)
+      return Response.json({ error: 'Could not record pageview' }, { status: 500, headers: corsHeaders })
     }
     return Response.json({ success: true }, { headers: corsHeaders })
   } catch (err) {
     console.error('Route crashed:', err)
-    return Response.json({ error: err.message }, { status: 500, headers: corsHeaders })
+    return Response.json({ error: 'Could not record pageview' }, { status: 500, headers: corsHeaders })
   }
 }
 
