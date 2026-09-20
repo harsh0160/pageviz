@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [terms, setTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (event) => {
@@ -26,10 +27,26 @@ export default function SignupPage() {
     setError('')
     setLoading(true)
     // The name is saved to the user's metadata so the workspace can greet them by it.
-    const { error: authError } = await supabase.auth.signUp({ email, password, options: { data: { name: name.trim() } } })
+    const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { name: name.trim() } } })
     setLoading(false)
     if (authError) setError(authError.message)
+    // With email confirmation switched on, sign-up returns no session: the account only
+    // works once the link is opened. Say that, instead of bouncing to a login that fails.
+    else if (!data.session) setSent(true)
     else router.push('/dashboard')
+  }
+
+  if (sent) {
+    return (
+      <AuthLayout variant="signup">
+        <div className="auth-heading">
+          <h1>Check your inbox</h1>
+          <p>We sent a confirmation link to <strong>{email}</strong>. Open it and your workspace is ready.</p>
+        </div>
+        <div className="inline-note"><Icon name="mail" /><span>Nothing after a few minutes? Look in spam, or <button type="button" className="text-link" onClick={() => setSent(false)}>use another address</button>.</span></div>
+        <p className="auth-alt">Already confirmed? <Link href="/login">Log in</Link></p>
+      </AuthLayout>
+    )
   }
 
   return (

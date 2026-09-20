@@ -25,7 +25,7 @@ const foundingOfferActive = new Date() < new Date(FOUNDING_OFFER_END)
 const FAQS = [
   ['Is the free plan really free?', 'Yes, genuinely. One website, seven days of history, and all the essentials, at no cost and with no card required.'],
   ['What counts as a website?', 'Any single domain you add to your workspace. The Pro plan holds up to ten, and Max stretches to thirty.'],
-  ['Do you use cookies?', 'Never. Pageviz is cookieless by design, which is why you never need a consent banner to use it.'],
+  ['Do you use cookies?', 'Never. Pageviz is cookieless and saves nothing on the device, so there is far less to disclose — though your own legal requirements still apply.'],
   ['Can I export my data?', 'On Pro and Max you can export clean CSV files whenever you like. Your data always belongs to you.'],
 ]
 

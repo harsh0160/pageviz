@@ -19,6 +19,8 @@ const supabaseAdmin = createClient(
 // old request while giving real-world delivery all the room it needs.
 const MAX_SIGNATURE_AGE_SECONDS = 300
 
+// Owner's rule: the plan is active only while the money is actually in. A failed
+// renewal (past_due) is NOT paid, so it drops to free until Paddle collects again.
 const ACTIVE_STATUSES = ['active', 'trialing']
 
 function isValidSignature(rawBody, signatureHeader, secret) {

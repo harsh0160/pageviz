@@ -14,7 +14,7 @@ export const metadata = {
 
 const FEATURES = [
   ['sparkles', 'The gist, at a glance', 'Open your dashboard and see how your site is doing in about three seconds. No setup rabbit holes, no dashboards you need a manual to read.'],
-  ['cookie', 'No cookies, no banners', 'Pageviz never uses cookies or collects personal data, so you can skip the consent banner and your visitors can just enjoy your work.'],
+  ['cookie', 'No cookies, nothing stored', 'Pageviz sets no cookies and saves nothing on the device, so there is far less to disclose in a consent banner.'],
   ['leaf', 'A lighter footprint', 'Our script is about 1.5 KB and our servers run lean. Analytics that measure your growth without weighing down the planet.'],
   ['activity', 'Live, when it matters', 'Watch pageviews arrive in real time during a launch, then let it fade into the background the rest of the week.'],
   ['mouse-pointer-2', 'Events worth counting', 'Track the moments that mean something, like a signup or a contact click, without turning your site into a surveillance machine.'],
@@ -121,7 +121,7 @@ export default function Home() {
                 <h2 className="section-heading">Analytics that feel like a <em>deep breath.</em></h2>
                 <p className="section-intro">We built Pageviz because we missed knowing how our own little websites were doing without feeling watched, upsold, or overwhelmed. It is calm on purpose.</p>
                 <ul className="why-list">
-                  <li><Icon name="circle-check" /><div><strong>Privacy is the default, not a setting.</strong>No personal data leaves your visitors&apos; browsers.</div></li>
+                  <li><Icon name="circle-check" /><div><strong>Privacy is the default, not a setting.</strong>We never store IP addresses and never build profiles of the people reading your site.</div></li>
                   <li><Icon name="circle-check" /><div><strong>Readable by a human being.</strong>Numbers presented like a good story, not a spreadsheet.</div></li>
                   <li><Icon name="circle-check" /><div><strong>Kind to the planet.</strong>A tiny script and lean servers mean a lighter footprint.</div></li>
                 </ul>

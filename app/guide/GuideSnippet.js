@@ -1,18 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Icon from '../_components/Icon'
 import { copyText, useToast } from '../_components/Toast'
+import { PUBLIC_ORIGIN } from '@/lib/plans'
 
 // The reference shows a placeholder CDN snippet; this is the app's real one
-// (public/track.js), using whatever origin Pageviz is served from.
+// (public/track.js). It always shows the public address, never the address the
+// reader happens to be browsing (localhost, a deploy preview, ...).
 export default function GuideSnippet() {
   const toast = useToast()
-  const [origin, setOrigin] = useState('')
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOrigin(window.location.origin)
-  }, [])
+  const origin = PUBLIC_ORIGIN
   const snippet = `<script src="${origin}/track.js" data-site-id="your-site-id"></script>`
   return (
     <div className="code-box">

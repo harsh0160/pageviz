@@ -17,7 +17,7 @@ export default function TermsPage() {
       <p>These Terms of Service (&quot;Terms&quot;) govern your access to and use of Pageviz (&quot;Pageviz&quot;, &quot;we&quot;, &quot;us&quot;), a privacy-first website analytics service. By creating an account or using Pageviz, you agree to these Terms. If you don&apos;t agree, please don&apos;t use the service.</p>
 
       <h2>1. The Service</h2>
-      <p>Pageviz lets you add a lightweight tracking script to your website and view visitor analytics — pageviews, referrers, top pages, and device breakdowns — in a dashboard. Pageviz is designed not to use cookies or collect personal identifiers from your site&apos;s visitors; see our <Link href="/privacy">Privacy Policy</Link> for exactly what is and isn&apos;t collected.</p>
+      <p>Pageviz lets you add a lightweight tracking script to your website and see your own pageview analytics — pageviews, referrers, top pages, and device breakdowns — in a dashboard. Pageviz is designed not to use cookies or collect personal identifiers from your site&apos;s visitors; see our <Link href="/privacy">Privacy Policy</Link> for exactly what is and isn&apos;t collected.</p>
 
       <h2>2. Your Account</h2>
       <p>You need an account to use Pageviz. You&apos;re responsible for keeping your login credentials secure and for all activity that happens under your account. Let us know right away if you suspect unauthorized access.</p>

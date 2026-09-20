@@ -1,0 +1,6 @@
+# Netlify's secrets scan reads its own saved build cache, where Next.js/Turbopack
+# stores the env values it used during the build, and finds RESEND_API_KEY there.
+# That cache is never published (the publish folder is .next), so this is a false
+# alarm that was failing every deploy. Skip scanning that one folder, nothing else.
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**"

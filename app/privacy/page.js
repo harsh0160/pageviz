@@ -24,7 +24,6 @@ export default function PrivacyPage() {
         <li>The page URL visited</li>
         <li>The referring URL, if any</li>
         <li>Device and browser type (e.g. &quot;mobile / Safari&quot;)</li>
-        <li>An approximate country, derived from IP address at the time of the request — the IP address itself is not stored</li>
         <li>Timestamp of the visit</li>
       </ul>
       <p>We do not collect names, email addresses, exact locations, or any other information that identifies an individual visitor.</p>
@@ -36,7 +35,7 @@ export default function PrivacyPage() {
       <p>We use the data above to generate your analytics dashboard, to operate and secure the service, to process billing, and to communicate important account or service updates to you. We do not sell data to advertisers or third parties.</p>
 
       <h2>5. Data Retention</h2>
-      <p>On the Free plan, pageview data is retained for 7 days. On paid plans, it&apos;s retained for up to 1 year. Account information is kept until you delete your account, after which associated data is removed within 30 days.</p>
+      <p>Pageview data is kept for as long as your plan shows it: the Free plan shows the last 7 days, Pro the last year, and Max keeps the full history of a site. Removing a site deletes its pageview data with it. Account information is kept until you delete your account, after which associated data is removed within 30 days.</p>
 
       <h2>6. Who We Share Data With</h2>
       <p>We use a small number of trusted service providers to run Pageviz:</p>

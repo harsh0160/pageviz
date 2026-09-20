@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { PUBLIC_ORIGIN } from '@/lib/plans'
 
 // One interface, two sources. RealWorkspace fills it from Supabase for the
 // signed-in user; DemoWorkspace fills it from the reference's sample data.
@@ -69,8 +70,7 @@ function DialogHost({ content, onClose }) {
 }
 
 export const installSnippet = (site) => {
-  const origin = typeof window === 'undefined' ? '' : window.location.origin
-  return `<script src="${origin}/track.js" data-site-id="${site.id}"></script>`
+  return `<script src="${PUBLIC_ORIGIN}/track.js" data-site-id="${site.id}"></script>`
 }
 
 // For titles only known on the client (a site's name). Next streams route

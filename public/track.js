@@ -66,17 +66,15 @@
     });
   };
 
-  // Real-time visitor counter: a stable-per-tab ref, pinged every 60s so the
-  // dashboard can count "active in the last 5 minutes." Not a persistent
-  // cross-visit identifier -- sessionStorage clears when the tab closes.
+  // Real-time counter: a random ref for this page load, pinged every 60s so the
+  // dashboard can count "active in the last 5 minutes." The ref stays in memory --
+  // nothing is written to the reader's device -- and the pings stop while the tab is
+  // hidden and after 30 minutes, so a tab left open all day stops calling us.
   try {
     if (localStorage.getItem('pv_excluded') !== '1') {
-      let visitorRef = sessionStorage.getItem('pv_ref');
-      if (!visitorRef) {
-        visitorRef = Math.random().toString(36).slice(2) + Date.now().toString(36);
-        sessionStorage.setItem('pv_ref', visitorRef);
-      }
+      const visitorRef = Math.random().toString(36).slice(2) + Date.now().toString(36);
       const beat = function() {
+        if (document.visibilityState === 'hidden') return;
         fetch(origin + '/api/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -85,7 +83,8 @@
         });
       };
       beat();
-      setInterval(beat, 60000);
+      const timer = setInterval(beat, 60000);
+      setTimeout(function() { clearInterval(timer); }, 30 * 60 * 1000);
     }
   } catch (e) {}
 })();

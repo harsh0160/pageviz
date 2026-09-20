@@ -178,6 +178,8 @@ export function BillingView() {
   const planAction = (key) => {
     const item = PLANS[key]
     if (ws.isDemo) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<PlanPreviewDialog plan={key} />)}>Switch to {item.name}</button>
+    // TODO: upgrading an existing subscriber this way opens a SECOND Paddle subscription
+    // (double billing). Real fix: update the live subscription through Paddle's API.
     if (rank(key) > rank(planKey)) return <CheckoutButton plan={key} className="button button-secondary button-small">Switch to {item.name}</CheckoutButton>
     // TODO: not wired yet — downgrades. Needs Paddle subscription update/cancel (API or customer portal link) — a new checkout would double-bill.
     return <button type="button" className="button button-secondary button-small" onClick={soon}>Switch to {item.name}</button>
