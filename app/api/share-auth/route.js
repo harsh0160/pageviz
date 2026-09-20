@@ -33,10 +33,12 @@ export async function POST(req) {
   // "gate a shared stats page" feature but worth strengthening if it ever guards more.
   if (site.share_password && site.share_password !== hashPassword(password || '')) {
     // That password is the only thing in front of a private page, so cap guessing:
-    // 10 wrong tries a minute per IP per site. A correct password never counts,
-    // so nobody gets locked out of a page they can actually open.
+    // 10 wrong tries a minute per IP per site. Only a real guess counts -- opening the
+    // page sends no password at all, which is the page finding out it is locked, not
+    // somebody trying to break in. A correct password never counts either, so nobody
+    // is ever locked out of a page they can actually open.
     const ip = clientIp(req)
-    if (ip && tooMany(`share:${ip}:${siteId}`, 10)) {
+    if (password && ip && tooMany(`share:${ip}:${siteId}`, 10)) {
       return NextResponse.json({ error: 'Too many attempts. Wait a minute and try again.', needsPassword: true }, { status: 429 })
     }
     return NextResponse.json({ error: 'Incorrect password', needsPassword: true }, { status: 401 })
