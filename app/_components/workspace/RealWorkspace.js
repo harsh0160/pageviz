@@ -52,6 +52,40 @@ export default function RealWorkspace({ children }) {
     return () => { cancelled = true }
   }, [router])
 
+  // Paddle sends the buyer straight back here, but the plan only changes once Paddle's
+  // webhook reaches our server a few seconds later. Without this wait they land on a
+  // dashboard that still says Free and reasonably conclude the payment failed -- the
+  // one moment where a confused customer is most likely to pay a second time.
+  const accountId = account?.id
+  useEffect(() => {
+    if (!accountId) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgraded') !== '1') return
+    // Drop the flag immediately so a refresh doesn't start the wait all over again.
+    window.history.replaceState({}, '', window.location.pathname)
+
+    let cancelled = false
+    let tries = 0
+    toast('Payment received. Activating your plan…', { icon: 'activity' })
+    const timer = setInterval(async () => {
+      tries += 1
+      const plan = await loadProfilePlan(accountId).catch(() => null)
+      if (cancelled) return
+      if (plan && plan !== 'free') {
+        clearInterval(timer)
+        setAccount((prev) => (prev ? { ...prev, planKey: plan } : prev))
+        if (cache?.account) cache.account = { ...cache.account, planKey: plan }
+        toast('Your plan is active. Thank you!', { celebration: true, icon: 'sprout' })
+      } else if (tries >= 20) {
+        // ~60s. The payment is Paddle's to keep either way, so say that plainly
+        // rather than leaving them staring at a free plan they just paid to leave.
+        clearInterval(timer)
+        toast('Payment received, but the plan is still updating. Refresh in a minute, or write to us.', { icon: 'mail' })
+      }
+    }, 3000)
+    return () => { cancelled = true; clearInterval(timer) }
+  }, [accountId, toast])
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('pv_compare')

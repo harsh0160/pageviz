@@ -49,7 +49,9 @@ export default function CheckoutButton({ plan, className, children, discountCode
         // app's light/dark theme (plus logo + brand colour set in Paddle) is as
         // close to "ours" as the hosted checkout gets.
         theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
-        successUrl: `${window.location.origin}/dashboard`,
+        // The flag tells the dashboard a payment just happened, so it can wait for
+        // Paddle's webhook instead of greeting the buyer with their old free plan.
+        successUrl: `${window.location.origin}/dashboard?upgraded=1`,
       },
     })
   }
