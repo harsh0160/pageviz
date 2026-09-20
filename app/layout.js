@@ -5,6 +5,7 @@ import './styles/app.css'
 import { ToastProvider } from './_components/Toast'
 import ThemeWatcher from './_components/ThemeWatcher'
 import SiteTracker from './_components/SiteTracker'
+import { PUBLIC_ORIGIN } from '@/lib/plans'
 
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
@@ -20,12 +21,21 @@ const dmSans = DM_Sans({
 })
 
 export const metadata = {
+  // Absolute URLs for the link-preview tags. Without this, og:image is emitted as
+  // a relative path and X, Slack and WhatsApp show no card at all.
+  metadataBase: new URL(PUBLIC_ORIGIN),
   title: 'Pageviz — Less noise. More insight.',
   description: 'Get the big picture without the baggage. Pageviz is simple, privacy-first, cookieless website analytics for people who make things.',
   openGraph: {
     title: 'Pageviz — Less noise. More insight.',
     description: 'Simple website analytics. A little clarity for your corner of the internet, without compromising your visitors’ privacy.',
     type: 'website',
+  },
+  // The big card, not the small square one -- app/opengraph-image.js supplies the picture.
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pageviz — Less noise. More insight.',
+    description: 'Simple website analytics. A little clarity for your corner of the internet, without compromising your visitors’ privacy.',
   },
 }
 
@@ -41,10 +51,8 @@ export default function RootLayout({ children }) {
     // reader's choice on every reload. Without the attribute, CSS falls back to the
     // light tokens on :root, which is the same default.
     <html lang="en" data-scroll-behavior="smooth" className={`${instrumentSerif.variable} ${dmSans.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
       <body suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <a className="skip-link" href="#main-content">Skip to content</a>
         <ThemeWatcher />
         <SiteTracker />
