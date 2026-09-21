@@ -14,7 +14,7 @@ export async function POST(req) {
   if (!isSiteId(site_id) || !event_name) {
     return Response.json({ error: 'Missing site_id or event_name' }, { status: 400, headers: corsHeaders })
   }
-  if (shouldIgnore(req, 'event', site_id)) {
+  if (await shouldIgnore(req, 'event', site_id)) {
     return Response.json({ ok: true }, { headers: corsHeaders })
   }
   // Keep event names short and bounded -- this is meant for a handful of

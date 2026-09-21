@@ -49,6 +49,10 @@ export default function GuidePage() {
                 <Icon name="info" />
                 <span>Don&apos;t want your own pageviews counted? Open your site once with <code>?pv_exclude=1</code> at the end of the address, for example <code>yoursite.com/?pv_exclude=1</code>. That browser is ignored from then on.</span>
               </div>
+              <div className="inline-note">
+                <Icon name="info" />
+                <span>Does your site change pages with a <code>#</code> in the address, like <code>yoursite.com/#/about</code>? Add <code>data-hash=&quot;1&quot;</code> to the script tag so those moves are counted too. Leave it off and plain <code>#section</code> links stay part of the page they are on.</span>
+              </div>
               <Link className="button button-primary button-large" href="/signup">Start for free <Icon name="arrow-up-right" /></Link>
             </div>
           </div>

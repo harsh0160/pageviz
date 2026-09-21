@@ -16,7 +16,7 @@ export async function POST(req) {
   if (!isSiteId(site_id) || !visitor_ref) {
     return Response.json({ error: 'Missing site_id or visitor_ref' }, { status: 400, headers: corsHeaders })
   }
-  if (shouldIgnore(req, 'heartbeat', site_id)) {
+  if (await shouldIgnore(req, 'heartbeat', site_id)) {
     return Response.json({ ok: true }, { headers: corsHeaders })
   }
   // This ref becomes a row of its own, so an unbounded one is a free way to run

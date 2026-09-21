@@ -19,10 +19,15 @@
   const origin = new URL(script.src).origin;
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
+  // Some sites change pages with the hash (#/about) instead of the path. Counting the
+  // hash everywhere would turn a plain anchor link (#pricing) into a page of its own and
+  // dirty every site's data, so this is opt-in: add data-hash="1" to the script tag.
+  const useHash = script.getAttribute('data-hash') === '1';
+
   let lastPath = null;
   function trackPageview(referrer) {
-    const path = window.location.pathname;
-    if (path === lastPath) return; // same page again (only #hash or ?query changed)
+    const path = window.location.pathname + (useHash ? window.location.hash : '');
+    if (path === lastPath) return; // same page again (only ?query, or a #hash we ignore, changed)
     lastPath = path;
     fetch(origin + '/api/track', {
       method: 'POST',
@@ -49,6 +54,13 @@
     };
   });
   window.addEventListener('popstate', function() { trackPageview(null); });
+
+  // A hash-routed site usually writes location.hash directly, which fires hashchange and
+  // no popstate, so that move would be missed. When a back/forward fires both, the second
+  // call sees the path the first one already recorded and is dropped.
+  if (useHash) {
+    window.addEventListener('hashchange', function() { trackPageview(null); });
+  }
 
   // Going back or forward can restore a whole page from the browser's own cache
   // without re-running this script, so the view above never fires. The reader did

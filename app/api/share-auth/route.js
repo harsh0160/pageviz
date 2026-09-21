@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { tooMany, clientIp } from '../../../lib/rate-limit'
+import { tooManyShared, clientIp } from '../../../lib/rate-limit'
 const legacyHash = (pw) => crypto.createHash('sha256').update(pw).digest('hex')
 
 // Compare without leaking, through timing, how much of the hash matched.
@@ -68,7 +68,7 @@ export async function POST(req) {
     // somebody trying to break in. A correct password never counts either, so nobody
     // is ever locked out of a page they can actually open.
     const ip = clientIp(req)
-    if (password && ip && tooMany(`share:${ip}:${siteId}`, 10)) {
+    if (password && ip && await tooManyShared(`share:${ip}:${siteId}`, 10)) {
       return NextResponse.json({ error: 'Too many attempts. Wait a minute and try again.', needsPassword: true }, { status: 429 })
     }
     return NextResponse.json({ error: 'Incorrect password', needsPassword: true }, { status: 401 })

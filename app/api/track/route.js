@@ -19,7 +19,7 @@ export async function POST(request) {
     const ref = referrer ? String(referrer).slice(0, 2048) : null
     const device = device_type === 'Mobile' ? 'Mobile' : 'Desktop'
     // Bots and over-limit callers get a normal-looking reply but nothing is stored.
-    if (shouldIgnore(request, 'pageview', site_id)) {
+    if (await shouldIgnore(request, 'pageview', site_id)) {
       return Response.json({ success: true }, { headers: corsHeaders })
     }
     const { error } = await supabase.from('pageviews').insert({ site_id, page_url: page, referrer: ref, device_type: device })
