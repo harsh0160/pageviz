@@ -5,34 +5,6 @@
 [build.environment]
   SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**"
 
-# Response headers. Netlify already sends HSTS and X-Content-Type-Options, so these
-# are the two it does not: where the browser may send this site's URL when someone
-# clicks away, and which browser features the pages may use. Payment is deliberately
-# NOT restricted: Paddle's checkout iframe needs it for Apple Pay and Google Pay.
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-
-# Clickjacking cover for the signed-in app only. A shared stats page is deliberately
-# public and someone may want to embed it, so /share/* is left frameable on purpose.
-[[headers]]
-  for = "/dashboard/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-
-[[headers]]
-  for = "/settings/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-
-[[headers]]
-  for = "/login"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-
-[[headers]]
-  for = "/signup"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
+# Response headers are NOT set here. Netlify applies these only to files it serves
+# from its own CDN -- /track.js got them, every page did not, because pages come
+# from the Next.js runtime. They live in next.config.mjs instead.

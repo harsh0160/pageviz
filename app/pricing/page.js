@@ -59,7 +59,7 @@ export default async function PricingPage({ searchParams }) {
                 return (
                   <article key={key} className={`price-card ${featured ? 'price-card-featured' : ''}`}>
                     {featured && <span className="price-flag">Most planted</span>}
-                    <div className="price-head"><h3>{plan.name}</h3><p>{plan.description}</p></div>
+                    <div className="price-head"><h2>{plan.name}</h2><p>{plan.description}</p></div>
                     <div className="price-amount"><strong>${plan.price}</strong><span>/ month</span></div>
                     {key === 'free' ? (
                       <Link href="/signup" className={buttonClass}>Start for free<Icon name="arrow-right" /></Link>
@@ -77,7 +77,7 @@ export default async function PricingPage({ searchParams }) {
             </div>
             <div className="price-custom">
               <div>
-                <h3>Need something custom for your team?</h3>
+                <h2>Need something custom for your team?</h2>
                 <p>More than 30 sites, custom retention, or a company-wide plan — let&apos;s talk.</p>
               </div>
               <a href={`mailto:${CONTACT_EMAIL}?subject=Custom%20team%20plan`} className="button button-secondary">Contact us <Icon name="arrow-up-right" /></a>

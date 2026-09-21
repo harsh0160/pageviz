@@ -82,8 +82,12 @@
   try {
     if (localStorage.getItem('pv_excluded') !== '1') {
       const visitorRef = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      let lastBeat = 0;
       const beat = function() {
         if (document.visibilityState === 'hidden') return;
+        // Switching tabs quickly should not turn into a burst of pings.
+        if (Date.now() - lastBeat < 10000) return;
+        lastBeat = Date.now();
         fetch(origin + '/api/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -92,8 +96,21 @@
         });
       };
       beat();
+      // A page opened in a background tab is not being read yet, so the beat above
+      // is skipped. Without this the reader stays uncounted for up to a minute after
+      // they finally switch to that tab, which is exactly when "reading now" matters.
+      const onVisible = function() {
+        if (document.visibilityState === 'visible') beat();
+      };
+      document.addEventListener('visibilitychange', onVisible);
       const timer = setInterval(beat, 60000);
-      setTimeout(function() { clearInterval(timer); }, 30 * 60 * 1000);
+      setTimeout(function() {
+        clearInterval(timer);
+        // Stop listening as well. Without this, a tab left open all day would keep
+        // pinging every time the reader came back to it, which is exactly what this
+        // 30-minute cut-off exists to prevent.
+        document.removeEventListener('visibilitychange', onVisible);
+      }, 30 * 60 * 1000);
     }
   } catch (e) {}
 })();

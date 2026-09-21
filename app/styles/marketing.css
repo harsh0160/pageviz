@@ -127,7 +127,7 @@
 .price-card { position: relative; display: flex; flex-direction: column; padding: 32px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
 .price-card-featured { border-color: var(--primary); box-shadow: var(--shadow-large); }
 .price-flag { position: absolute; top: -12px; left: 28px; background: var(--primary); color: var(--primary-ink); font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; }
-.price-head h3 { font-size: 18px; margin-bottom: 8px; }
+.price-head h2 { font-size: 18px; margin-bottom: 8px; }
 .price-head p { font-size: 12px; color: var(--muted); line-height: 1.6; min-height: 38px; }
 .price-amount { display: flex; align-items: baseline; gap: 6px; margin: 20px 0 22px; }
 .price-amount strong { font-family: var(--font-display); font-size: 52px; font-weight: 400; letter-spacing: -1.5px; color: var(--ink); }
@@ -141,7 +141,7 @@
 .price-offer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin-bottom: 28px; padding: 14px 20px; border-radius: 12px; background: var(--primary); color: var(--primary-ink); font-size: 13px; }
 .price-offer code { font-family: ui-monospace, monospace; padding: 1px 7px; border-radius: 5px; background: color-mix(in srgb, var(--primary-ink) 16%, transparent); }
 .price-custom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding: 22px 26px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
-.price-custom h3 { font-size: 15px; }
+.price-custom h2 { font-size: 15px; }
 .price-custom p { margin-top: 4px; font-size: 13px; color: var(--muted); }
 .price-note .text-link { font-size: 12px; }
 

@@ -93,7 +93,7 @@
 .site-card { display: flex; flex-direction: column; padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; transition: transform .2s, box-shadow .2s, border-color .2s; }
 .site-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-strong); }
 .site-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
-.site-card h3 { font-size: 17px; letter-spacing: -.3px; }
+.site-card h2 { font-size: 17px; letter-spacing: -.3px; }
 .site-card .site-domain { margin-top: 6px; }
 .site-card-metric { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 20px 0 16px; }
 .site-card-metric strong { display: block; font-size: 30px; font-weight: 500; letter-spacing: -1px; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
@@ -114,7 +114,7 @@
 .add-site-tile strong { font-size: 14px; color: var(--ink); }
 .add-site-tile span { font-size: 12px; }
 .site-grid-empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; }
-.site-grid-empty h3 { font-size: 17px; margin-bottom: 8px; }
+.site-grid-empty h2 { font-size: 17px; margin-bottom: 8px; }
 .site-grid-empty p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
 
 /* ---------- site subbar ---------- */

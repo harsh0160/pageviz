@@ -63,7 +63,7 @@ export default function DashboardView() {
         {filtered.length ? filtered.map((site) => <SiteCard key={site.id} site={site} stats={stats.perSite[site.id]} loading={stats.loading} />) : sites.length ? (
           <div className="site-grid-empty">
             <EmptyIcon name="search" />
-            <h3>No sites match &ldquo;{search}&rdquo;</h3>
+            <h2>No sites match &ldquo;{search}&rdquo;</h2>
             <p>Try a different name, or clear your search to see everything.</p>
             <button type="button" className="button button-secondary" onClick={() => setSearch('')}>Clear search</button>
           </div>
@@ -89,7 +89,7 @@ function SiteCard({ site, stats, loading }) {
     return (
       <Link href={href} className="site-card site-card-waiting">
         <div className="site-card-head"><SiteAvatar site={site} size="avatar-large" /><span className="badge badge-soft">Awaiting first visit</span></div>
-        <h3>{site.name}</h3>
+        <h2>{site.name}</h2>
         <span className="site-domain"><Icon name="globe" />{site.domain}</span>
         <div className="site-card-waiting-body"><Icon name="sprout" /><p>Add the snippet to start growing your data.</p></div>
         <span className="site-card-cta">Finish setup <Icon name="arrow-right" /></span>
@@ -104,7 +104,7 @@ function SiteCard({ site, stats, loading }) {
   return (
     <Link href={href} className="site-card">
       <div className="site-card-head"><SiteAvatar site={site} size="avatar-large" />{live !== null && <LiveBadge count={live} />}</div>
-      <h3>{site.name}</h3>
+      <h2>{site.name}</h2>
       <span className="site-domain"><Icon name="globe" />{site.domain}</span>
       <div className="site-card-metric">
         <div><strong>{loading || !stats ? '—' : formatNumber(stats.views)}</strong><span>views · {rangeCaption(ws.range)}</span></div>
