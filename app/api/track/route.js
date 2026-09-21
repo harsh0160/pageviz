@@ -1,10 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-import { corsHeaders, shouldIgnore, preflight, isSiteId } from '../../../lib/ingest'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { corsHeaders, shouldIgnore, preflight, isSiteId, ingestDb } from '../../../lib/ingest'
 
 export async function POST(request) {
   try {
@@ -21,6 +15,10 @@ export async function POST(request) {
     // Bots and over-limit callers get a normal-looking reply but nothing is stored.
     if (await shouldIgnore(request, 'pageview', site_id)) {
       return Response.json({ success: true }, { headers: corsHeaders })
+    }
+    const supabase = ingestDb()
+    if (!supabase) {
+      return Response.json({ error: 'Could not record pageview' }, { status: 500, headers: corsHeaders })
     }
     const { error } = await supabase.from('pageviews').insert({ site_id, page_url: page, referrer: ref, device_type: device })
     if (error) {

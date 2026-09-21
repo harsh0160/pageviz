@@ -1,10 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-import { corsHeaders, shouldIgnore, preflight, isSiteId, readJson } from '../../../lib/ingest'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { corsHeaders, shouldIgnore, preflight, isSiteId, readJson, ingestDb } from '../../../lib/ingest'
 
 // The script's ref is 20-ish random characters; anything longer is not ours.
 const REF_MAX = 64
@@ -27,6 +21,10 @@ export async function POST(req) {
   // "Active now" = count of rows updated in the last 5 minutes -- see
   // /api/active-count. Needs a unique constraint on (site_id, visitor_ref)
   // for the upsert to work, see the SQL migration note.
+  const supabase = ingestDb()
+  if (!supabase) {
+    return Response.json({ error: 'Could not record heartbeat' }, { status: 500, headers: corsHeaders })
+  }
   const { error } = await supabase
     .from('heartbeats')
     .upsert({ site_id, visitor_ref: ref, last_seen_at: new Date().toISOString() }, { onConflict: 'site_id,visitor_ref' })
