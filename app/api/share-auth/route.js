@@ -92,7 +92,13 @@ export async function POST(req) {
     .maybeSingle()
   const plan = ownerProfile?.plan || 'free'
   const RETENTION_DAYS = { free: 7, pro: 365, business: null }
-  const retentionDays = RETENTION_DAYS[plan] ?? RETENTION_DAYS.free
+  // Business means "no cutoff", which this table spells as null -- and `??` treats null as
+  // missing, so `RETENTION_DAYS[plan] ?? RETENTION_DAYS.free` quietly handed Max owners the
+  // free plan's 7 days. Ask whether the plan is known instead, so a known plan's value is
+  // used exactly as written and only an unrecognised plan falls back.
+  const retentionDays = Object.prototype.hasOwnProperty.call(RETENTION_DAYS, plan)
+    ? RETENTION_DAYS[plan]
+    : RETENTION_DAYS.free
 
   // Newest-first, then paged. Ordered the other way round, PostgREST's 1,000-row
   // default silently handed back the OLDEST thousand rows, so a busy shared page
