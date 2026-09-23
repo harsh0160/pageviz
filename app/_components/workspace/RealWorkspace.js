@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { planFor, isPaidPlan, isMaxPlan } from '@/lib/plans'
 import {
-  rangeWindow, rangeAllowed, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv, downloadCombinedCsv,
+  rangeWindow, rangeAllowed, monthStart, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv, downloadCombinedCsv,
 } from '@/lib/analytics'
 import {
   loadProfile, loadSites, toSite, countPageviews, fetchSitePageviews, fetchPageviewTimes, fetchSiteEvents, fetchActiveCount,
@@ -29,6 +29,7 @@ export default function RealWorkspace({ children }) {
   const [range, setRangeState] = useState(cache?.range || '7')
   const [compare, setCompareState] = useState(true)
   const [live, setLive] = useState(cache?.live || {})
+  const [usedThisMonth, setUsedThisMonth] = useState(cache?.usedThisMonth ?? null)
 
   const planKey = account?.planKey || 'free'
   const paid = isPaidPlan(planKey)
@@ -86,6 +87,25 @@ export default function RealWorkspace({ children }) {
     }, 3000)
     return () => { cancelled = true; clearInterval(timer) }
   }, [accountId, toast])
+
+  // This month's pageviews across every site, for the plan allowance. One count query when
+  // the workspace opens (and again if a site is added or removed) -- nothing per pageview.
+  // A failure only hides the usage line; it must never take the dashboard down with it.
+  const siteIdsKey = sites.map((site) => site.id).join(',')
+  useEffect(() => {
+    if (!accountId) return
+    let cancelled = false
+    const ids = siteIdsKey ? siteIdsKey.split(',') : []
+    const counting = ids.length ? countPageviews(ids, { since: monthStart() }) : Promise.resolve(0)
+    counting
+      .then((count) => {
+        if (cancelled) return
+        setUsedThisMonth(count)
+        if (cache) cache.usedThisMonth = count
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [accountId, siteIdsKey])
 
   useEffect(() => {
     try {
@@ -266,6 +286,8 @@ export default function RealWorkspace({ children }) {
     // Paddle's own cancel / update-card pages, and the next charge date. Null until a
     // subscription webhook has filled them in, so the UI must cope with not having them.
     billing: { managementUrls: account?.managementUrls || null, nextBilledAt: account?.nextBilledAt || null },
+    // Pageviews this calendar month against the plan's allowance. `used` is null until counted.
+    usage: { used: usedThisMonth, limit: planFor(planKey).pageviews },
     sites,
     getSite: (id) => sites.find((site) => site.id === id),
     range, setRange, compare, setCompare,
@@ -276,7 +298,7 @@ export default function RealWorkspace({ children }) {
     openDialog, closeDialog, toast,
     actions,
     hooks: { useDashboardStats, useSiteStats, useOverviewStats },
-  }), [account, planKey, paid, sites, range, setRange, compare, setCompare, live, totalLive, openDialog, closeDialog, toast, actions])
+  }), [account, planKey, paid, usedThisMonth, sites, range, setRange, compare, setCompare, live, totalLive, openDialog, closeDialog, toast, actions])
 
   return (
     <WorkspaceContext.Provider value={value}>

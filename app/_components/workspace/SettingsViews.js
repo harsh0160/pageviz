@@ -8,6 +8,7 @@ import { useSoon } from '../Toast'
 import { EmptyIcon, SoonBadge } from '../ui'
 import { useThemePreference } from '@/lib/theme'
 import { CONTACT_EMAIL, PLANS, PLAN_ORDER } from '@/lib/plans'
+import { formatNumber } from '@/lib/analytics'
 import AppShell from './AppShell'
 import { useWorkspace } from './context'
 import { ChangePasswordDialog, PlanPreviewDialog } from './dialogs'
@@ -206,6 +207,12 @@ export function BillingView() {
         <div className="plan-usage-bar">
           <div className="usage-line"><span>Websites</span><span>{usage} of {plan.sites}</span></div>
           <div className="progress-track"><span style={{ width: `${Math.min(100, usage / plan.sites * 100)}%` }}></span></div>
+          {ws.usage?.used !== null && ws.usage?.used !== undefined && (
+            <div className="usage-row">
+              <div className="usage-line"><span>Pageviews this month</span><span>{formatNumber(ws.usage.used)} of {formatNumber(ws.usage.limit)}</span></div>
+              <div className="progress-track"><span style={{ width: `${Math.min(100, ws.usage.used / ws.usage.limit * 100)}%` }}></span></div>
+            </div>
+          )}
         </div>
         {isPaid ? (
           <div className="plan-current-foot">

@@ -39,6 +39,8 @@ export default function DemoWorkspace({ children }) {
       isMax: isMaxPlan(state.user.plan),
       // Demo has no Paddle subscription behind it, so there are no real links to give.
       billing: { managementUrls: null, nextBilledAt: null },
+      // The sample data is not a real month of traffic, so no allowance figure is shown.
+      usage: { used: null, limit: planFor(state.user.plan).pageviews },
       sites,
       allSites: state.sites,
       getSite: (id) => sites.find((site) => site.id === id),

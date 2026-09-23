@@ -5,10 +5,34 @@ import Link from 'next/link'
 import Icon from '../Icon'
 import { EmptyIcon, GrowthBadge, LiveBadge, MetricCard, RangePicker, SiteAvatar } from '../ui'
 import { formatNumber, rangeCaption, dateLabel } from '@/lib/analytics'
+import { CONTACT_EMAIL } from '@/lib/plans'
 import { demoDateLabel } from '@/lib/demo-store'
 import AppShell from './AppShell'
 import { useWorkspace } from './context'
 import { useAddSite } from './dialogs'
+
+// Shown only from 80% of the monthly allowance. Nothing is blocked -- this is a nudge
+// towards the next plan, or towards a custom one for a Max workspace past its allowance.
+function UsageNote({ usage, plan, isMax, billingPath }) {
+  if (!usage || usage.used === null || !usage.limit) return null
+  const share = usage.used / usage.limit
+  if (share < 0.8) return null
+  const limit = formatNumber(usage.limit)
+  const text = share >= 1
+    ? `You've gone past this month's ${limit} pageviews on the ${plan.name} plan.`
+    : `You've used ${Math.floor(share * 100)}% of this month's ${limit} pageviews on the ${plan.name} plan.`
+  return (
+    <div className="inline-note usage-note">
+      <Icon name="info" />
+      <span>
+        {text}{' '}
+        {isMax
+          ? <a className="text-link" href={`mailto:${CONTACT_EMAIL}?subject=More%20pageviews`}>Talk to us about more room</a>
+          : <Link className="text-link" href={billingPath}>See plans</Link>}
+      </span>
+    </div>
+  )
+}
 
 // The reference's dashboardPage() from src/pages/app.js.
 export default function DashboardView() {
@@ -41,6 +65,8 @@ export default function DashboardView() {
           </button>
         </div>
       </div>
+
+      <UsageNote usage={ws.usage} plan={plan} isMax={ws.isMax} billingPath={paths.billing} />
 
       <div className="metric-grid metric-grid-four dashboard-metrics">
         <MetricCard label="Total views" icon="bar-chart-3" value={stats.loading ? '—' : formatNumber(stats.totals.views)} extra={<><GrowthBadge growth={stats.loading ? null : stats.totals.growth} /><span>vs. previous period</span></>} />

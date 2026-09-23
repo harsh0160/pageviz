@@ -88,7 +88,7 @@ export function SetupDialog({ siteId }) {
     <>
       <DialogHeader title="Add your snippet" subtitle={`Paste this into ${site.domain} to start counting.`} />
       <ol className="install-steps">
-        <li><div><strong>Copy the snippet below</strong><p>One small script, about 1.5 KB.</p></div></li>
+        <li><div><strong>Copy the snippet below</strong><p>One small script, about 2 KB.</p></div></li>
         <li><div><strong>Paste it into your HTML</strong><p>Just before the closing &lt;/head&gt; tag, on every page.</p></div></li>
         <li><div><strong>Publish and wait a beat</strong><p>Your first visit will appear within seconds.</p></div></li>
       </ol>
@@ -323,7 +323,7 @@ export function PlanPreviewDialog({ plan }) {
       <div className="plan-preview">
         <span className="feature-icon"><Icon name={plan === 'business' ? 'layers' : plan === 'free' ? 'leaf' : 'sparkles'} /></span>
         <div className="plan-preview-price"><strong>${item.price}</strong><span>/month</span></div>
-        <ul className="price-features">{item.features.slice(0, 4).map((feature) => <li key={feature}><Icon name="check" />{feature}</li>)}</ul>
+        <ul className="price-features">{item.features.slice(0, 5).map((feature) => <li key={feature}><Icon name="check" />{feature}</li>)}</ul>
       </div>
       <div className="dialog-footer">
         <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Not now</button>

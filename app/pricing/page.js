@@ -23,7 +23,8 @@ const FOUNDING_OFFER_CODE = 'FOUNDER20'
 const foundingOfferActive = new Date() < new Date(FOUNDING_OFFER_END)
 
 const FAQS = [
-  ['Is the free plan really free?', 'Yes, genuinely. One website, seven days of history, and all the essentials, at no cost and with no card required.'],
+  ['Is the free plan really free?', 'Yes, genuinely. One website, 10,000 pageviews a month, seven days of history, and all the essentials, at no cost and with no card required.'],
+  ['What if I go over my pageviews?', 'Your dashboard shows how much of your monthly allowance you have used, and suggests the next plan when you go past it. Need more than 500,000 a month? Email us and we will set up a plan that fits.'],
   ['What counts as a website?', 'Any single domain you add to your workspace. The Pro plan holds up to ten, and Max stretches to thirty.'],
   ['Do you use cookies?', 'Never. Pageviz is cookieless and saves nothing on the device, so there is far less to disclose — though your own legal requirements still apply.'],
   ['Can I export my data?', 'On Pro and Max you can export clean CSV files whenever you like. Your data always belongs to you.'],
@@ -78,7 +79,7 @@ export default async function PricingPage({ searchParams }) {
             <div className="price-custom">
               <div>
                 <h2>Need something custom for your team?</h2>
-                <p>More than 30 sites, custom retention, or a company-wide plan — let&apos;s talk.</p>
+                <p>More than 30 sites or 500,000 pageviews a month, custom retention, or a company-wide plan — let&apos;s talk.</p>
               </div>
               <a href={`mailto:${CONTACT_EMAIL}?subject=Custom%20team%20plan`} className="button button-secondary">Contact us <Icon name="arrow-up-right" /></a>
             </div>
