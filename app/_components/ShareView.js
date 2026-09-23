@@ -132,7 +132,10 @@ export default function ShareView({ status, site, stats, live = null, rangeText,
               <div>
                 <span className="eyebrow">Public dashboard</span>
                 <h1>{site.name}</h1>
-                <a className="site-domain" href={`https://${site.domain}`} target="_blank" rel="noopener noreferrer"><Icon name="globe" />{site.domain}</a>
+                {site.domain.endsWith('.example')
+                  // Reserved for examples (the demo's sample sites): never a real site, so no link.
+                  ? <span className="site-domain"><Icon name="globe" />{site.domain}</span>
+                  : <a className="site-domain" href={`https://${site.domain}`} target="_blank" rel="noopener noreferrer"><Icon name="globe" />{site.domain}</a>}
               </div>
             </div>
             {live !== null && <LiveBadge count={live} />}

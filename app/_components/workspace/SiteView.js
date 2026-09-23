@@ -39,7 +39,10 @@ export default function SiteView({ siteId }) {
           <SiteAvatar site={site} size="avatar-large" />
           <div>
             <h1 className="page-title">{site.name}</h1>
-            <a className="site-domain" href={`https://${site.domain}`} target="_blank" rel="noopener noreferrer"><Icon name="globe" />{site.domain}<Icon name="external-link" /></a>
+            {site.domain.endsWith('.example')
+              // Reserved for examples (the demo's sample sites): never a real site, so no link.
+              ? <span className="site-domain"><Icon name="globe" />{site.domain}</span>
+              : <a className="site-domain" href={`https://${site.domain}`} target="_blank" rel="noopener noreferrer"><Icon name="globe" />{site.domain}<Icon name="external-link" /></a>}
           </div>
         </div>
         <div className="page-head-actions">

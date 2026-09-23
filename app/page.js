@@ -15,7 +15,7 @@ export const metadata = {
 const FEATURES = [
   ['sparkles', 'The gist, at a glance', 'Open your dashboard and see how your site is doing in about three seconds. No setup rabbit holes, no dashboards you need a manual to read.'],
   ['cookie', 'No cookies, nothing stored', 'Pageviz sets no cookies and saves nothing on the device, so there is far less to disclose in a consent banner.'],
-  ['leaf', 'A lighter footprint', 'Our script is about 1.5 KB and our servers run lean. Analytics that measure your growth without weighing down the planet.'],
+  ['leaf', 'A lighter footprint', 'Our script is about 2 KB and our servers run lean. Analytics that measure your growth without weighing down the planet.'],
   ['activity', 'Live, when it matters', 'Watch pageviews arrive in real time during a launch, then let it fade into the background the rest of the week.'],
   ['mouse-pointer-2', 'Events worth counting', 'Track the moments that mean something, like a signup or a contact click, without turning your site into a surveillance machine.'],
   ['link', 'Made to be shared', 'Send a clean, password-protected link to a client or a collaborator. They see the numbers, not your login.'],
@@ -32,7 +32,7 @@ function HeroPanel() {
     <div className="hero-panel">
       <div className="hero-panel-top">
         <div>
-          <span className="hero-panel-site"><span className="site-avatar forest avatar-tiny">N</span>studionorth.design</span>
+          <span className="hero-panel-site"><span className="site-avatar forest avatar-tiny">N</span>studionorth.example</span>
           <span className="live-badge"><span className="live-dot"></span>12 reading right now</span>
         </div>
         <span className="badge badge-green"><Icon name="arrow-up-right" />18.6%</span>
@@ -127,7 +127,7 @@ export default function Home() {
                 </ul>
               </div>
               <div className="why-stats">
-                <div className="stat-tile"><strong>~1.5 KB</strong><span>Script size, so pages stay quick.</span></div>
+                <div className="stat-tile"><strong>~2 KB</strong><span>Script size, so pages stay quick.</span></div>
                 <div className="stat-tile"><strong>0</strong><span>Cookies set, banners needed, or dark patterns.</span></div>
                 <div className="stat-tile"><strong>1 min</strong><span>To go from sign up to your first pageview.</span></div>
                 <div className="stat-tile stat-tile-accent"><strong>100%</strong><span>Yours. Export your data whenever you like.</span></div>
