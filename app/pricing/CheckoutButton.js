@@ -13,12 +13,16 @@ export default function CheckoutButton({ plan, className, children, discountCode
 
   useEffect(() => {
     let cancelled = false
-    const attempt = () => {
+    // Paddle.js brings Paddle's own Retain (ProfitWell) tracker with it, and someone who is
+    // not signed in cannot check out anyway -- their click goes to sign-up first. So only a
+    // signed-in visitor loads Paddle ahead of time; people just reading the prices never do.
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return
+      if (!data.session) { setStatus('ready'); return }
       loadPaddle()
         .then(() => { if (!cancelled) setStatus('ready') })
         .catch(() => { if (!cancelled) setStatus('error') })
-    }
-    attempt()
+    })
     return () => { cancelled = true }
   }, [])
 
@@ -36,6 +40,15 @@ export default function CheckoutButton({ plan, className, children, discountCode
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login?signup=1')
+      return
+    }
+
+    // Signed in after this page loaded (say, in another tab)? Then Paddle was never loaded
+    // here. If it already is, this resolves at once.
+    try {
+      await loadPaddle()
+    } catch (err) {
+      setStatus('error')
       return
     }
 
