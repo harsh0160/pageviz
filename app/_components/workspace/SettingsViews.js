@@ -11,7 +11,7 @@ import { CONTACT_EMAIL, PLANS, PLAN_ORDER } from '@/lib/plans'
 import { formatNumber } from '@/lib/analytics'
 import AppShell from './AppShell'
 import { useWorkspace } from './context'
-import { ChangePasswordDialog, PlanPreviewDialog } from './dialogs'
+import { ChangePasswordDialog, ChangePlanDialog, PlanPreviewDialog } from './dialogs'
 
 // The reference's src/pages/settings.js (plus the sidebar's Team members item).
 
@@ -190,8 +190,9 @@ export function BillingView() {
   const planAction = (key) => {
     const item = PLANS[key]
     if (ws.isDemo) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<PlanPreviewDialog plan={key} />)}>Switch to {item.name}</button>
-    // TODO: upgrading an existing subscriber this way opens a SECOND Paddle subscription
-    // (double billing). Real fix: update the live subscription through Paddle's API.
+    // A paying customer moves up on the subscription they already have; a new checkout
+    // would start a second one and bill them twice.
+    if (rank(key) > rank(planKey) && isPaid) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<ChangePlanDialog plan={key} />)}>Switch to {item.name}</button>
     if (rank(key) > rank(planKey)) return <CheckoutButton plan={key} className="button button-secondary button-small">Switch to {item.name}</CheckoutButton>
     // TODO: not wired yet — downgrades. Needs Paddle subscription update/cancel (API or customer portal link) — a new checkout would double-bill.
     return <button type="button" className="button button-secondary button-small" onClick={soon}>Switch to {item.name}</button>
@@ -247,6 +248,8 @@ export function BillingView() {
                   <div className="plan-option-price"><strong>${item.price}</strong><span>/mo</span></div>
                 </div>
                 {current ? <span className="badge badge-green"><Icon name="check" />Current plan</span> : planAction(key)}
+                {/* Same list as /pricing (lib/plans.js), so a signed-in customer can see what each plan includes. */}
+                <ul className="price-features plan-option-features">{item.features.map((feature) => <li key={feature}><Icon name="check" />{feature}</li>)}</ul>
               </div>
             )
           })}

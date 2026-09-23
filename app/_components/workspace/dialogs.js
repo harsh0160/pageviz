@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Icon from '../Icon'
 import { copyText, useSoon } from '../Toast'
 import { SoonBadge } from '../ui'
 import { PasswordInput } from '../AuthLayout'
-import { PLANS } from '@/lib/plans'
+import { PLANS, CONTACT_EMAIL } from '@/lib/plans'
 import { cleanDomain } from '@/lib/analytics'
 import { useWorkspace, installSnippet } from './context'
 
@@ -307,6 +307,62 @@ export function ChangePasswordDialog() {
 const CELEBRATIONS = { pro: 'Welcome to Pro. Room to grow!', business: 'Welcome to Max. The whole garden is yours!', free: 'Back on the free plan.' }
 
 // Demo only: switches the sample workspace's plan (no payment anywhere).
+// "12.34 USD" style amounts from Paddle arrive as smallest-unit strings ("1234").
+function formatMoney(amount, currency) {
+  const format = new Intl.NumberFormat(undefined, { style: 'currency', currency })
+  return format.format(Number(amount) / 10 ** format.resolvedOptions().maximumFractionDigits)
+}
+
+// Real workspace only: a Pro subscriber moving up to Max. Shows what Paddle will charge
+// today before anything changes, then updates the same subscription.
+export function ChangePlanDialog({ plan }) {
+  const ws = useWorkspace()
+  const item = PLANS[plan]
+  const [quote, setQuote] = useState(null)
+  const [error, setError] = useState(null)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ws.actions.changePlan(plan, { preview: true }).then((result) => {
+      if (cancelled) return
+      if (result.error || result.amount === null || !result.currency) setError(result.error || 'We could not work out the price right now.')
+      else setQuote(result)
+    })
+    return () => { cancelled = true }
+  }, [plan, ws.actions])
+
+  const confirm = async () => {
+    setSaving(true)
+    const result = await ws.actions.changePlan(plan, { preview: false })
+    if (result.error) {
+      setSaving(false)
+      setError(result.error)
+      return
+    }
+    // A full load, so the workspace waits for Paddle's webhook to confirm the new plan.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign(`${window.location.origin}${ws.paths.billing}?upgraded=${plan}`)
+  }
+
+  const today = quote ? formatMoney(quote.amount, quote.currency) : null
+  return (
+    <>
+      <DialogHeader title={`Move up to ${item.name}`} subtitle="Your current subscription is changed. You won't be billed twice." />
+      <div className="plan-preview">
+        <div className="plan-preview-price"><strong>${item.price}</strong><span>/month</span></div>
+        {!quote && !error && <p className="muted">Checking the price with Paddle…</p>}
+        {quote && <p className="muted">You pay <strong>{today}</strong> today for the rest of this billing period{quote.nextBilledAt ? `, then $${item.price} a month from ${new Date(quote.nextBilledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}.</p>}
+        {error && <div className="form-message error">{error} If it keeps happening, write to us at {CONTACT_EMAIL}.</div>}
+      </div>
+      <div className="dialog-footer">
+        <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Not now</button>
+        <button type="button" className="button button-primary" disabled={!quote || saving} onClick={confirm}>{saving ? 'Upgrading…' : today ? `Pay ${today} and upgrade` : `Upgrade to ${item.name}`}</button>
+      </div>
+    </>
+  )
+}
+
 export function PlanPreviewDialog({ plan }) {
   const ws = useWorkspace()
   const router = useRouter()

@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { loadPaddle } from '@/lib/paddle-loader'
 import { PLAN_TO_PRICE } from '@/lib/paddle-prices'
 import { trackGoal } from '@/lib/goal'
+import { isPaidPlan } from '@/lib/plans'
+import { loadProfile } from '@/lib/workspace-queries'
 
 export default function CheckoutButton({ plan, className, children, discountCode }) {
   const [status, setStatus] = useState('loading')
@@ -40,6 +42,14 @@ export default function CheckoutButton({ plan, className, children, discountCode
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login?signup=1')
+      return
+    }
+
+    // Someone already paying must change plans from billing settings, which updates the
+    // subscription they have. A checkout here would start a second one and bill them twice.
+    const profile = await loadProfile(user.id).catch(() => null)
+    if (isPaidPlan(profile?.plan)) {
+      router.push('/settings/billing')
       return
     }
 

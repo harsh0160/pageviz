@@ -61,7 +61,11 @@ export default function RealWorkspace({ children }) {
   useEffect(() => {
     if (!accountId) return
     const params = new URLSearchParams(window.location.search)
-    if (params.get('upgraded') !== '1') return
+    // "1" comes back from a new checkout (any paid plan will do); a plan key comes from
+    // a Pro -> Max change, where the plan is already paid and must become that one.
+    const upgraded = params.get('upgraded')
+    if (upgraded !== '1' && !isPaidPlan(upgraded)) return
+    const arrived = (plan) => (upgraded === '1' ? plan !== 'free' : plan === upgraded)
     // Drop the flag immediately so a refresh doesn't start the wait all over again.
     window.history.replaceState({}, '', window.location.pathname)
 
@@ -72,7 +76,7 @@ export default function RealWorkspace({ children }) {
       tries += 1
       const profile = await loadProfile(accountId).catch(() => null)
       if (cancelled) return
-      if (profile && profile.plan !== 'free') {
+      if (profile && arrived(profile.plan)) {
         clearInterval(timer)
         const paidBits = { planKey: profile.plan, managementUrls: profile.managementUrls, nextBilledAt: profile.nextBilledAt }
         setAccount((prev) => (prev ? { ...prev, ...paidBits } : prev))
@@ -268,6 +272,23 @@ export default function RealWorkspace({ children }) {
       if (error) return error.message
       toast('Password updated', { icon: 'check' })
       return null
+    },
+    // Pro -> Max on the existing Paddle subscription (a new checkout would bill twice).
+    // preview: true only asks what today's charge would be. Returns the route's JSON,
+    // or { error } when it failed.
+    async changePlan(plan, { preview }) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const response = await fetch('/api/billing/change-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+          body: JSON.stringify({ plan, preview }),
+        })
+        const body = await response.json().catch(() => ({}))
+        return response.ok ? body : { error: body.error || 'Something went wrong.' }
+      } catch {
+        return { error: 'Could not reach Pageviz. Check your connection and try again.' }
+      }
     },
   }), [account, planKey, sites, router, toast, celebrate])
 
