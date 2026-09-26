@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { planFor, isPaidPlan, isMaxPlan } from '@/lib/plans'
 import {
-  rangeWindow, rangeAllowed, monthStart, bucketCounts, previousBucketCounts, countBy, referrerName, growthPercent, hashSharePassword, downloadPageviewsCsv, downloadCombinedCsv,
+  rangeWindow, rangeAllowed, monthStart, previousBuckets, countBy, growthPercent, hashSharePassword, downloadPageviewsCsv, downloadCombinedCsv,
 } from '@/lib/analytics'
 import {
-  loadProfile, loadSites, toSite, countPageviews, fetchSitePageviews, fetchPageviewTimes, fetchSiteEvents, fetchActiveCount,
+  loadProfile, loadSites, toSite, countPageviews, fetchSitePageviews, fetchSiteEvents, fetchActiveCount, firstPageviewAt, pageviewStats,
 } from '@/lib/workspace-queries'
 import { useToast } from '../Toast'
 import { WorkspaceContext, buildPaths, useDialogHost } from './context'
@@ -233,10 +233,16 @@ export default function RealWorkspace({ children }) {
       toast(hashed ? 'Password protection on' : 'Password protection off', { icon: 'lock' })
       return true
     },
-    exportCsv(site, rows, currentRange) {
+    // The screen shows counts, not rows, so the export fetches the rows itself.
+    async exportCsv(site, rows, currentRange) {
       if (!isPaidPlan(planKey)) { router.push(buildPaths('real').pricing); return }
-      downloadPageviewsCsv(site, rows || [], currentRange)
-      toast('CSV export started', { icon: 'download' })
+      toast('Gathering your pageviews…', { icon: 'download' })
+      try {
+        downloadPageviewsCsv(site, await fetchSitePageviews(site.id, rangeWindow(currentRange).start), currentRange)
+        toast('CSV export started', { icon: 'download' })
+      } catch (err) {
+        toast('Could not build the export. Please try again.', { icon: 'info' })
+      }
     },
     // Every site in one file. Unlike the per-site export, the rows are not already on
     // screen, so they are fetched here -- one request per site, which is at most 30.
@@ -389,23 +395,24 @@ function useDashboardStats(ws) {
     const week = rangeWindow('7')
     ;(async () => {
       try {
-        const [counts, weekRows] = await Promise.all([
-          Promise.all(list.map(async (id) => [id, ...(await Promise.all([
-            countPageviews(id, { since: period.start }),
-            period.previous ? countPageviews(id, { since: period.previous.start, until: period.previous.end }) : null,
-          ]))])),
-          list.length ? fetchPageviewTimes(list, week.start) : [],
+        if (!list.length) { setStats({ loading: false, perSite: {}, totals: { views: 0, growth: null } }); return }
+        // Three counts for every site at once: this range, the one before it, and the
+        // last 7 days by day for each card's little bar chart.
+        const [current, previous, lastWeek] = await Promise.all([
+          pageviewStats({ siteIds: list, since: period.start, topN: 0 }),
+          period.previous ? pageviewStats({ siteIds: list, since: period.previous.start, until: period.previous.end, topN: 0 }) : null,
+          pageviewStats({ siteIds: list, since: week.start, buckets: week.buckets, topN: 0 }),
         ])
         if (cancelled) return
         const perSite = {}
-        let views = 0
-        let previous = 0
-        for (const [id, current, before] of counts) {
-          views += current
-          previous += before || 0
-          perSite[id] = { views: current, growth: before === null ? null : growthPercent(current, before), series: bucketCounts(weekRows.filter((row) => row.site_id === id), week.buckets) }
+        for (const id of list) {
+          perSite[id] = {
+            views: current.perSite[id],
+            growth: previous ? growthPercent(current.perSite[id], previous.perSite[id]) : null,
+            series: lastWeek.series[id],
+          }
         }
-        setStats({ loading: false, perSite, totals: { views, growth: period.previous ? growthPercent(views, previous) : null } })
+        setStats({ loading: false, perSite, totals: { views: current.views, growth: previous ? growthPercent(current.views, previous.views) : null } })
       } catch (error) {
         console.error('Dashboard stats failed', error)
         if (!cancelled) setStats((current) => ({ ...current, loading: false }))
@@ -417,7 +424,7 @@ function useDashboardStats(ws) {
   return stats
 }
 
-const EMPTY_SITE_STATS = { loading: true, views: 0, growth: null, perDay: 0, topPage: null, pages: [], referrers: [], devices: [], events: [], eventTotal: 0, chart: { labels: [], values: [], previous: null }, rows: [] }
+const EMPTY_SITE_STATS = { loading: true, views: 0, growth: null, perDay: 0, topPage: null, pages: [], referrers: [], devices: [], events: [], eventTotal: 0, chart: { labels: [], values: [], previous: null } }
 
 function useSiteStats(ws, siteId) {
   const { ready, range, isPaid } = ws
@@ -431,28 +438,28 @@ function useSiteStats(ws, siteId) {
     let cancelled = false
     ;(async () => {
       try {
-        const rows = await fetchSitePageviews(siteId, rangeWindow(range).start)
-        const period = rangeWindow(range, { firstDate: rows[0]?.created_at })
-        const [previousRows, events] = await Promise.all([
-          period.previous ? fetchPageviewTimes(siteId, period.previous.start, period.previous.end) : [],
+        // "All time" starts at the site's first pageview; every other range knows its start.
+        const firstDate = range === 'all' ? await firstPageviewAt(siteId) : null
+        const period = rangeWindow(range, { firstDate })
+        const [current, previous, events] = await Promise.all([
+          pageviewStats({ siteIds: [siteId], since: period.start, buckets: period.buckets, siteDomain }),
+          period.previous ? pageviewStats({ siteIds: [siteId], since: period.previous.start, until: period.previous.end, buckets: previousBuckets(period), topN: 0 }) : null,
           isPaid ? fetchSiteEvents(siteId, period.start) : [],
         ])
         if (cancelled) return
-        const views = rows.length
-        const pages = countBy(rows, (row) => row.page_url)
+        const views = current.views
         setStats({
           loading: false,
           views,
-          growth: period.previous ? growthPercent(views, previousRows.length) : null,
+          growth: previous ? growthPercent(views, previous.views) : null,
           perDay: Math.round(views / period.days),
-          topPage: pages[0] ? { name: pages[0].name, share: views ? pages[0].count / views * 100 : 0 } : null,
-          pages,
-          referrers: countBy(rows, (row) => referrerName(row.referrer, siteDomain)),
-          devices: countBy(rows, (row) => row.device_type || 'Unknown', 0),
+          topPage: current.pages[0] ? { name: current.pages[0].name, share: views ? current.pages[0].count / views * 100 : 0 } : null,
+          pages: current.pages,
+          referrers: current.referrers,
+          devices: current.devices,
           events: countBy(events, (row) => row.event_name, 0),
           eventTotal: events.length,
-          chart: { labels: period.buckets.map((bucket) => bucket.label), values: bucketCounts(rows, period.buckets), previous: previousBucketCounts(previousRows, period) },
-          rows,
+          chart: { labels: period.buckets.map((bucket) => bucket.label), values: current.series[siteId], previous: previous ? previous.series[siteId] : null },
         })
       } catch (error) {
         console.error('Site stats failed', error)
@@ -476,29 +483,31 @@ function useOverviewStats(ws) {
     const list = ids ? ids.split(',') : []
     ;(async () => {
       try {
-        const rows = list.length ? await fetchPageviewTimes(list, rangeWindow(range).start) : []
-        const period = rangeWindow(range, { firstDate: rows[0]?.created_at })
-        const previousCounts = period.previous
-          ? Object.fromEntries(await Promise.all(list.map(async (id) => [id, await countPageviews(id, { since: period.previous.start, until: period.previous.end })])))
-          : {}
+        const firstDate = range === 'all' && list.length ? await firstPageviewAt(list) : null
+        const period = rangeWindow(range, { firstDate })
+        const [current, previous] = list.length
+          ? await Promise.all([
+            pageviewStats({ siteIds: list, since: period.start, buckets: period.buckets, topN: 0 }),
+            period.previous ? pageviewStats({ siteIds: list, since: period.previous.start, until: period.previous.end, topN: 0 }) : null,
+          ])
+          : [{ views: 0, perSite: {}, series: {} }, null]
         if (cancelled) return
-        const bySite = Object.fromEntries(list.map((id) => [id, rows.filter((row) => row.site_id === id)]))
-        const total = rows.length
-        const previousTotal = Object.values(previousCounts).reduce((sum, count) => sum + count, 0)
+        const total = current.views
+        const viewsOf = (id) => current.perSite[id] || 0
         const siteRows = ws.sites.map((site) => ({
           site,
-          views: bySite[site.id].length,
-          growth: period.previous ? growthPercent(bySite[site.id].length, previousCounts[site.id]) : null,
-          share: total ? bySite[site.id].length / total * 100 : 0,
+          views: viewsOf(site.id),
+          growth: previous ? growthPercent(viewsOf(site.id), previous.perSite[site.id] || 0) : null,
+          share: total ? viewsOf(site.id) / total * 100 : 0,
         })).sort((a, b) => b.views - a.views)
         const growers = siteRows.filter((row) => row.growth !== null).sort((a, b) => b.growth - a.growth)
         setStats({
           loading: false,
           rows: siteRows,
-          totals: { views: total, growth: period.previous ? growthPercent(total, previousTotal) : null },
+          totals: { views: total, growth: previous ? growthPercent(total, previous.views) : null },
           chart: {
             labels: period.buckets.map((bucket) => bucket.label),
-            series: siteRows.filter((row) => row.site.tracking).map((row) => ({ id: row.site.id, name: row.site.name, values: bucketCounts(bySite[row.site.id], period.buckets) })),
+            series: siteRows.filter((row) => row.site.tracking).map((row) => ({ id: row.site.id, name: row.site.name, values: current.series[row.site.id] || [] })),
           },
           // With no pageviews in the range there is nothing to crown.
           bestGrower: total ? (growers[0] || siteRows[0]) : null,
