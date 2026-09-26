@@ -9,6 +9,7 @@ import { CONTACT_EMAIL } from '@/lib/plans'
 
 export const metadata = {
   title: 'What’s growing — Pageviz',
+  description: 'What is new in Pageviz and what is being built next.',
 }
 
 export default function RoadmapPage() {

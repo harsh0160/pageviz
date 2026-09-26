@@ -45,8 +45,10 @@
 .sidebar-upsell .icon { width: 16px; height: 16px; }
 .sidebar-upsell .icon:last-child { margin-left: auto; }
 /* Next port: help link + profile row styles the reference markup uses but never defines. */
-.help-link { margin-top: 10px; }
 .help-link .icon:last-child { margin-left: auto; width: 14px; height: 14px; color: var(--faint); }
+.sidebar-help { margin-top: 14px; }
+.feedback-link { width: 100%; background: none; border: 0; text-align: left; }
+.feedback-input { resize: vertical; }
 .sidebar-profile { display: flex; align-items: center; gap: 11px; margin-top: 8px; padding: 12px 6px 0 12px; border-top: 1px solid var(--border); }
 .sidebar-profile > span:nth-child(2) { min-width: 0; margin-right: auto; }
 .sidebar-profile strong { display: block; font-size: 13px; color: var(--ink); }
@@ -186,9 +188,10 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
 .live-inline { display: inline-flex; align-items: center; gap: 6px; }
 
 /* ---------- settings ---------- */
-.settings-layout { display: grid; grid-template-columns: 210px 1fr; gap: 30px; align-items: start; }
-.settings-tabs { display: flex; flex-direction: column; gap: 3px; position: sticky; top: 30px; }
-.settings-tab { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 9px; font-size: 13px; font-weight: 500; color: var(--text); }
+/* Only four tabs, so they sit in one row above the content and the cards get the full width. */
+.settings-layout { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
+.settings-tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+.settings-tab { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 9px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
 .settings-tab .icon { width: 17px; height: 17px; color: var(--muted); }
 .settings-tab:hover { background: var(--surface-soft); color: var(--ink); }
 .settings-tab.active { background: var(--accent); color: var(--accent-ink); }
@@ -228,35 +231,38 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
 .settings-form .field-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 .settings-form { display: flex; flex-direction: column; }
 .settings-form .button { align-self: flex-start; }
-.empty-inline { display: flex; align-items: center; gap: 12px; padding: 24px; justify-content: center; color: var(--muted); font-size: 13px; }
+.empty-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 24px; justify-content: center; color: var(--muted); font-size: 13px; }
 .empty-inline .icon { width: 20px; height: 20px; color: var(--sage); }
+.empty-inline .button .icon { width: 15px; height: 15px; color: inherit; }
 
 /* ---------- billing ---------- */
 .settings-card-plan { padding: 0; overflow: hidden; }
-.plan-current { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 28px; background: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%), var(--surface); }
-.plan-current-name { font-family: var(--font-display); font-weight: 400; font-size: 34px; letter-spacing: -.8px; margin: 4px 0 8px; }
+.plan-current { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 22px 40px; padding: 28px; background: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%), var(--surface); }
+.plan-current-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
+.plan-current-name { font-family: var(--font-display); font-weight: 400; font-size: 34px; letter-spacing: -.8px; }
 .plan-current p { font-size: 13px; color: var(--muted); }
-.plan-current-price { text-align: right; flex-shrink: 0; }
-.plan-current-price strong { font-family: var(--font-display); font-size: 40px; font-weight: 400; color: var(--ink); }
-.plan-current-price span { font-size: 12px; color: var(--muted); }
-.plan-usage-bar { padding: 20px 28px; border-top: 1px solid var(--border); }
+.plan-current-price strong { font-family: var(--font-display); font-size: 24px; font-weight: 400; color: var(--ink); }
+.plan-current-price span { margin-left: 3px; font-size: 12px; color: var(--muted); }
 .usage-line { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
 .usage-row { margin-top: 16px; }
 .usage-note { margin-bottom: 20px; }
 .plan-current-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 18px 28px; border-top: 1px solid var(--border); background: var(--surface-soft); }
 .plan-current-foot .muted { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
 .plan-current-foot .icon { width: 15px; height: 15px; color: var(--positive); }
-.plan-options { display: flex; flex-direction: column; gap: 12px; }
-.plan-option { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border: 1px solid var(--border); border-radius: 12px; }
-.plan-option-features { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; padding-top: 16px; }
+/* The plans sit side by side, like /pricing, whenever the card is wide enough; stacked otherwise. */
+.plan-choices { container-type: inline-size; }
+.plan-options { display: grid; gap: 12px; }
+@container (min-width: 640px) { .plan-options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.plan-option { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; }
+.plan-option.current { border-color: var(--primary); background: var(--surface-soft); }
+.plan-option .button, .plan-option > .badge { width: 100%; min-height: 38px; justify-content: center; }
+.plan-option-head strong { display: block; font-size: 15px; color: var(--ink); }
+.plan-option-head .muted { font-size: 12px; }
+.plan-option-price strong { font-size: 22px; color: var(--ink); }
+.plan-option-price span { font-size: 11px; color: var(--muted); }
+.plan-option-features { align-self: stretch; margin: 4px 0 0; padding-top: 14px; gap: 9px; }
 .plan-option-features li { font-size: 12px; }
 .plan-option-features .icon { width: 15px; height: 15px; }
-.plan-option.current { border-color: var(--primary); background: var(--surface-soft); }
-.plan-option-head { display: flex; align-items: center; gap: 14px; }
-.plan-option-head strong { display: block; font-size: 14px; color: var(--ink); }
-.plan-option-head .muted { font-size: 12px; }
-.plan-option-price strong { font-size: 20px; color: var(--ink); }
-.plan-option-price span { font-size: 11px; color: var(--muted); }
 
 /* ---------- referrals ---------- */
 .referral-hero { text-align: center; padding: 40px 32px; }
@@ -282,7 +288,7 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
 .menu-item-danger:hover .icon:first-child, .menu-item-danger:hover strong { color: var(--danger); }
 .workspace-current { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface-soft); border-radius: 11px; }
 .workspace-current strong { display: block; font-size: 13px; color: var(--ink); }
-.workspace-current small { font-size: 11px; color: var(--muted); }
+.workspace-current small { display: block; font-size: 11px; color: var(--muted); }
 .workspace-current span:not(.workspace-avatar) { margin-right: auto; }
 .workspace-current .icon { color: var(--primary); }
 .events-list { margin: 16px 0; }
@@ -332,9 +338,6 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
   body.nav-open .sidebar-scrim { display: block; position: fixed; inset: 0; z-index: 55; background: rgb(17 30 22 / 45%); border: 0; }
   /* Next port: the scrim colour matches the dark canvas, so the open menu didn't dim the page at all. */
   :root[data-theme='dark'] body.nav-open .sidebar-scrim { background: rgb(0 0 0 / 55%); }
-  .settings-layout { grid-template-columns: 1fr; }
-  .settings-tabs { position: static; flex-direction: row; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
-  .settings-tab { white-space: nowrap; }
   /* Next port: the sidebar goes off-canvas at 900px but .mobile-only only appears at 700px,
      which left no way to open it between the two; show the menu/close buttons with the topbar. */
   .app-topbar .mobile-only, .app-sidebar .mobile-only { display: inline-flex; }
@@ -346,11 +349,9 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
   .page-title { font-size: 32px; }
   .page-head-actions { width: 100%; flex-wrap: wrap; }
   .stat-columns { grid-template-columns: 1fr; }
-  .plan-option-features { grid-template-columns: 1fr; }
   .site-page-head { flex-direction: column; align-items: flex-start; }
   .settings-form .field-pair { grid-template-columns: 1fr; }
   .referral-stats { grid-template-columns: 1fr; }
   .theme-choices { grid-template-columns: 1fr; }
-  .plan-current { flex-direction: column; }
-  .plan-current-price { text-align: left; }
+  .plan-current { grid-template-columns: 1fr; }
 }

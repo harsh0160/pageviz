@@ -138,7 +138,7 @@ export default function RealWorkspace({ children }) {
       if (localStorage.getItem(`pv_celebrated_${siteId}`) === '1') return
       localStorage.setItem(`pv_celebrated_${siteId}`, '1')
     } catch (e) {}
-    toast('Your first visits are in. Welcome aboard!', { celebration: true, icon: 'sprout' })
+    toast('Your first pageviews are in. Welcome aboard!', { celebration: true, icon: 'sprout' })
   }, [toast])
 
   // First-visitor watch: the app's existing ActivationStatus poll (every 5s).
@@ -273,6 +273,39 @@ export default function RealWorkspace({ children }) {
       toast('Password updated', { icon: 'check' })
       return null
     },
+    // "Invoices & billing": sends the customer to Paddle's portal. Returns an error message,
+    // or nothing once the browser is on its way.
+    async openBillingPortal() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const response = await fetch('/api/billing/portal', {
+          method: 'POST',
+          headers: session ? { Authorization: `Bearer ${session.access_token}` } : {},
+        })
+        const body = await response.json().catch(() => ({}))
+        if (!response.ok || !body.url) return body.error || 'Could not open the billing page.'
+        window.location.assign(body.url)
+        return null
+      } catch {
+        return 'Could not reach Pageviz. Check your connection and try again.'
+      }
+    },
+    // Sidebar "Share feedback": emailed to the owner. Returns the error message, or null when sent.
+    async sendFeedback(message) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+          body: JSON.stringify({ message }),
+        })
+        if (response.ok) return null
+        const body = await response.json().catch(() => ({}))
+        return body.error || 'Your message could not be sent.'
+      } catch {
+        return 'Could not reach Pageviz. Check your connection and try again.'
+      }
+    },
     // Pro -> Max on the existing Paddle subscription (a new checkout would bill twice).
     // preview: true only asks what today's charge would be. Returns the route's JSON,
     // or { error } when it failed.
@@ -378,6 +411,7 @@ function useSiteStats(ws, siteId) {
   const { ready, range, isPaid } = ws
   const site = ws.sites.find((item) => item.id === siteId)
   const tracking = !!site?.tracking
+  const siteDomain = site?.domain
   const [stats, setStats] = useState(EMPTY_SITE_STATS)
 
   useEffect(() => {
@@ -401,7 +435,7 @@ function useSiteStats(ws, siteId) {
           perDay: Math.round(views / period.days),
           topPage: pages[0] ? { name: pages[0].name, share: views ? pages[0].count / views * 100 : 0 } : null,
           pages,
-          referrers: countBy(rows, (row) => referrerName(row.referrer)),
+          referrers: countBy(rows, (row) => referrerName(row.referrer, siteDomain)),
           devices: countBy(rows, (row) => row.device_type || 'Unknown', 0),
           events: countBy(events, (row) => row.event_name, 0),
           eventTotal: events.length,
@@ -414,7 +448,7 @@ function useSiteStats(ws, siteId) {
       }
     })()
     return () => { cancelled = true }
-  }, [ready, tracking, siteId, range, isPaid])
+  }, [ready, tracking, siteId, siteDomain, range, isPaid])
 
   return stats
 }

@@ -8,7 +8,7 @@ import Icon from '../Icon'
 import ThemeButton from '../ThemeButton'
 import { SiteAvatar, SoonBadge } from '../ui'
 import { useWorkspace } from './context'
-import { WorkspaceDialog, useAddSite } from './dialogs'
+import { FeedbackDialog, WorkspaceDialog, useAddSite } from './dialogs'
 
 // The reference's appShell() from src/ui.js.
 export default function AppShell({ active = 'sites', crumb = 'Your sites', children }) {
@@ -71,6 +71,11 @@ export default function AppShell({ active = 'sites', crumb = 'Your sites', child
           ))}
         </nav>
 
+        <nav className="sidebar-nav sidebar-help">
+          <Link href="/guide" className="sidebar-link help-link"><Icon name="circle-help" /><span>A helping hand</span><Icon name="arrow-up-right" /></Link>
+          <button type="button" className="sidebar-link feedback-link" onClick={() => ws.openDialog(<FeedbackDialog />)}><Icon name="mail" /><span>Share feedback</span></button>
+        </nav>
+
         <div className="sidebar-label">WORKSPACE</div>
         <nav className="sidebar-nav">
           {navItem(paths.team, 'users', 'Team members', 'team', <SoonBadge />)}
@@ -84,7 +89,6 @@ export default function AppShell({ active = 'sites', crumb = 'Your sites', child
             <p>{sites.length} of {plan.sites} sites in use</p>
             {ws.planKey !== 'business' && <Link href={paths.pricing} className="button button-soft button-small full-width">A little more room? <Icon name="arrow-up-right" /></Link>}
           </div>
-          <Link href="/guide" className="sidebar-link help-link"><Icon name="circle-help" /><span>A helping hand</span><Icon name="arrow-up-right" /></Link>
           <div className="sidebar-profile">
             <span className="user-avatar">{ws.user.initial}</span>
             <span><strong>{ws.user.name}</strong><small>{ws.user.email}</small></span>

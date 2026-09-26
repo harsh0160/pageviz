@@ -30,7 +30,6 @@ export default function Footer() {
             <div>
               <span className="footer-label">A WORK IN PROGRESS</span>
               <Link href="/roadmap">What’s growing</Link>
-              <Link href="/settings/referrals">Spread the word</Link>
               <Link href="/guide">Getting started</Link>
             </div>
           </div>

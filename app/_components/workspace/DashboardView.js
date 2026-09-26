@@ -114,7 +114,7 @@ function SiteCard({ site, stats, loading }) {
   if (site.tracking === false) {
     return (
       <Link href={href} className="site-card site-card-waiting">
-        <div className="site-card-head"><SiteAvatar site={site} size="avatar-large" /><span className="badge badge-soft">Awaiting first visit</span></div>
+        <div className="site-card-head"><SiteAvatar site={site} size="avatar-large" /><span className="badge badge-soft">Awaiting first pageview</span></div>
         <h2>{site.name}</h2>
         <span className="site-domain"><Icon name="globe" />{site.domain}</span>
         <div className="site-card-waiting-body"><Icon name="sprout" /><p>Add the snippet to start growing your data.</p></div>

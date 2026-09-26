@@ -12,5 +12,8 @@ export default function SiteTracker() {
   const pathname = usePathname()
   const siteId = process.env.NEXT_PUBLIC_PAGEVIZ_SITE_ID
   if (!siteId || EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null
-  return <script src="/track.js" data-site-id={siteId} async />
+  // Not loading the script on app pages is not enough: once loaded on a marketing page it
+  // keeps running when a link moves on into the app without a reload, and it counted
+  // every dashboard click. data-exclude tells the script itself to skip those paths.
+  return <script src="/track.js" data-site-id={siteId} data-exclude={EXCLUDED_PREFIXES.join(',')} async />
 }

@@ -55,7 +55,7 @@ export default function DemoWorkspace({ children }) {
       openDialog, closeDialog, toast,
       actions: {
         addSite: async (input) => demoActions.addSite(input),
-        verifyInstall: async (id) => { demoActions.verifyInstall(id); toast('Your first visits are in. Welcome aboard!', { celebration: true, icon: 'sprout' }) },
+        verifyInstall: async (id) => { demoActions.verifyInstall(id); toast('Your first pageviews are in. Welcome aboard!', { celebration: true, icon: 'sprout' }) },
         setShared: async (id, shared) => { demoActions.setShared(id, shared); toast(shared ? 'Public page is live' : 'Public page turned off', { icon: 'link' }); return true },
         setPasswordEnabled: (id, enabled) => { demoActions.setPasswordEnabled(id, enabled); toast(enabled ? 'Password protection on' : 'Password protection off', { icon: 'lock' }) },
         enableEvents: (id) => { demoActions.enableEvents(id); toast('Events turned on', { icon: 'mouse-pointer-2' }) },

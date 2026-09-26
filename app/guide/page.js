@@ -8,13 +8,14 @@ import GuideSnippet from './GuideSnippet'
 
 export const metadata = {
   title: 'Getting started — Pageviz',
+  description: 'Add Pageviz to your website in one step: copy one small script, paste it into your pages, and your first pageview shows up in seconds.',
 }
 
 const STEPS = [
   ['Create your free account', 'Sign up in about a minute. No credit card, no lengthy questionnaire.', 'user'],
   ['Add your first website', 'Give it a name and its domain. Pageviz makes a cozy little home for its data.', 'globe'],
   ['Plant the snippet', 'Copy one small script tag into your site’s HTML, just before the closing head tag.', 'code-xml'],
-  ['Watch it bloom', 'Come back to a calm, readable dashboard. Your first visit usually shows up within seconds.', 'sprout'],
+  ['Watch it bloom', 'Come back to a calm, readable dashboard. Your first pageview usually shows up within seconds.', 'sprout'],
 ]
 
 export default function GuidePage() {

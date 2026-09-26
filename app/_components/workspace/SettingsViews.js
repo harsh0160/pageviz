@@ -157,6 +157,12 @@ export function AccountView() {
         <div className="settings-card-head"><h2>Password</h2><p>Keep your quiet corner secure.</p></div>
         <button type="button" className="button button-secondary" onClick={ws.isDemo ? soon : () => ws.openDialog(<ChangePasswordDialog />)}><Icon name="key-round" />Change password</button>
       </section>
+      <section className="settings-card">
+        <div className="settings-card-head"><h2>Log out</h2><p>Signed in as {ws.user?.email}.</p></div>
+        {ws.isDemo
+          ? <Link className="button button-secondary" href="/"><Icon name="log-out" />Log out</Link>
+          : <button type="button" className="button button-secondary" onClick={() => ws.actions.logout()}><Icon name="log-out" />Log out</button>}
+      </section>
       <section className="settings-card settings-card-danger">
         <div className="settings-card-head"><h2>Close account</h2><p>Delete your workspace and all its data. This can&apos;t be undone.</p></div>
         {/* Self-serve deletion needs a service-role route + cleanup + Paddle cancel — not built yet, so this goes through us for now. */}
@@ -202,18 +208,21 @@ export function BillingView() {
     <SettingsShell tab="billing">
       <section className="settings-card settings-card-plan">
         <div className="plan-current">
-          <div><span className="eyebrow">Current plan</span><h2 className="plan-current-name">{plan.name}</h2><p>{plan.description}</p></div>
-          <div className="plan-current-price"><strong>${plan.price}</strong><span>/ month</span></div>
-        </div>
-        <div className="plan-usage-bar">
-          <div className="usage-line"><span>Websites</span><span>{usage} of {plan.sites}</span></div>
-          <div className="progress-track"><span style={{ width: `${Math.min(100, usage / plan.sites * 100)}%` }}></span></div>
-          {ws.usage?.used !== null && ws.usage?.used !== undefined && (
-            <div className="usage-row">
-              <div className="usage-line"><span>Pageviews this month</span><span>{formatNumber(ws.usage.used)} of {formatNumber(ws.usage.limit)}</span></div>
-              <div className="progress-track"><span style={{ width: `${Math.min(100, ws.usage.used / ws.usage.limit * 100)}%` }}></span></div>
-            </div>
-          )}
+          <div>
+            <span className="eyebrow">Current plan</span>
+            <div className="plan-current-title"><h2 className="plan-current-name">{plan.name}</h2><span className="plan-current-price"><strong>${plan.price}</strong><span>/ month</span></span></div>
+            <p>{plan.description}</p>
+          </div>
+          <div className="plan-usage-bar">
+            <div className="usage-line"><span>Websites</span><span>{usage} of {plan.sites}</span></div>
+            <div className="progress-track"><span style={{ width: `${Math.min(100, usage / plan.sites * 100)}%` }}></span></div>
+            {ws.usage?.used !== null && ws.usage?.used !== undefined && (
+              <div className="usage-row">
+                <div className="usage-line"><span>Pageviews this month</span><span>{formatNumber(ws.usage.used)} of {formatNumber(ws.usage.limit)}</span></div>
+                <div className="progress-track"><span style={{ width: `${Math.min(100, ws.usage.used / ws.usage.limit * 100)}%` }}></span></div>
+              </div>
+            )}
+          </div>
         </div>
         {isPaid ? (
           <div className="plan-current-foot">
@@ -232,7 +241,7 @@ export function BillingView() {
         )}
       </section>
 
-      <section className="settings-card">
+      <section className="settings-card plan-choices">
         <div className="settings-card-head">
           <h2>Try another plan</h2>
           <p>{ws.isDemo ? 'Switch instantly to preview what each plan unlocks. Nothing is charged.' : 'Move up whenever your garden needs a little more room. Cancel any time.'}</p>
@@ -243,10 +252,8 @@ export function BillingView() {
             const current = planKey === key
             return (
               <div key={key} className={`plan-option ${current ? 'current' : ''}`}>
-                <div className="plan-option-head">
-                  <div><strong>{item.name}</strong><span className="muted">{item.description}</span></div>
-                  <div className="plan-option-price"><strong>${item.price}</strong><span>/mo</span></div>
-                </div>
+                <div className="plan-option-head"><strong>{item.name}</strong><span className="muted">{item.description}</span></div>
+                <div className="plan-option-price"><strong>${item.price}</strong><span>/mo</span></div>
                 {current ? <span className="badge badge-green"><Icon name="check" />Current plan</span> : planAction(key)}
                 {/* Same list as /pricing (lib/plans.js), so a signed-in customer can see what each plan includes. */}
                 <ul className="price-features plan-option-features">{item.features.map((feature) => <li key={feature}><Icon name="check" />{feature}</li>)}</ul>
@@ -270,14 +277,29 @@ export function BillingView() {
             </table>
           </div>
         ) : isPaid ? (
-          // TODO: not wired yet — billing history. Needs Paddle transactions API (server route with the Paddle API key) listed by paddle_customer_id.
-          <div className="empty-inline"><Icon name="mail" /><p>Paddle emails you a receipt for every payment.</p></div>
+          <div className="empty-inline">
+            <Icon name="mail" />
+            <p>Paddle emails you a receipt for every payment. Every invoice is also on your billing page.</p>
+            <BillingPortalButton />
+          </div>
         ) : (
           <div className="empty-inline"><Icon name="credit-card" /><p>No invoices yet. Free plans stay free.</p></div>
         )}
       </section>
     </SettingsShell>
   )
+}
+
+// Paddle's customer portal: invoices, receipts, card and cancelling, in one place.
+function BillingPortalButton() {
+  const ws = useWorkspace()
+  const [opening, setOpening] = useState(false)
+  const open = async () => {
+    setOpening(true)
+    const failure = await ws.actions.openBillingPortal()
+    if (failure) { setOpening(false); ws.toast(failure, { icon: 'info' }) }
+  }
+  return <button type="button" className="button button-secondary button-small" disabled={opening} onClick={open}><Icon name="file" />{opening ? 'Opening…' : 'Invoices & billing'}</button>
 }
 
 /* ---------- Refer a friend ---------- */

@@ -16,7 +16,7 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Old links (and CheckoutButton) still point at /login?signup=1 — sign-up now has its own page.
+    // Old links still point at /login?signup=1 — sign-up now has its own page.
     if (window.location.search.includes('signup')) router.replace('/signup')
   }, [router])
 

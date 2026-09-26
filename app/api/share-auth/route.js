@@ -111,11 +111,12 @@ export async function POST(req) {
   const SHARE_ROW_CAP = 50000
   const PAGE_SIZE = 1000
 
-  let since = null
-  if (retentionDays !== null) {
-    since = new Date()
-    since.setDate(since.getDate() - retentionDays)
-  }
+  // The page shows the last 30 days next to the 30 before them, so nothing older is ever
+  // read. Fetching a Max site's whole history here only made the page slow and, past the
+  // row cap, cut off data the page actually shows.
+  const SHOWN_DAYS = 61 // 60 shown, plus a day of slack for the viewer's time zone
+  const since = new Date()
+  since.setDate(since.getDate() - (retentionDays === null ? SHOWN_DAYS : Math.min(retentionDays, SHOWN_DAYS)))
 
   const buildQuery = () => {
     const query = supabaseAdmin
@@ -123,7 +124,7 @@ export async function POST(req) {
       .select('page_url, referrer, device_type, created_at')
       .eq('site_id', siteId)
       .order('created_at', { ascending: false })
-    return since ? query.gte('created_at', since.toISOString()) : query
+    return query.gte('created_at', since.toISOString())
   }
 
   // Walk by however many rows actually came back, not by how many were asked for.

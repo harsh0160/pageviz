@@ -131,7 +131,7 @@ function SetupContent({ site }) {
       <div className="setup-hero">
         <SiteAvatar site={site} size="avatar-large" />
         <h1 className="page-title">{site.name} is ready to grow</h1>
-        <p className="page-sub">Add one small snippet to {site.domain} and Pageviz will start counting visits, gently and cookie-free.</p>
+        <p className="page-sub">Add one small snippet to {site.domain} and Pageviz will start counting pageviews, gently and cookie-free.</p>
         <button type="button" className="button button-primary" onClick={() => ws.openDialog(<SetupDialog siteId={site.id} />)}><Icon name="code-xml" />Show me the snippet</button>
       </div>
       <div className="setup-waiting">

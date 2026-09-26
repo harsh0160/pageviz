@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { trackGoal } from '@/lib/goal'
+import { PLANS, isPaidPlan } from '@/lib/plans'
+import { useToast } from '../_components/Toast'
 import AuthLayout, { PasswordInput } from '../_components/AuthLayout'
 import Icon from '../_components/Icon'
 
@@ -18,7 +20,16 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  // Set when they came from a paid plan's button on /pricing: after sign-up they go to
+  // billing to finish, instead of a dashboard that has forgotten what they wanted.
+  const [plan, setPlan] = useState(null)
   const router = useRouter()
+  const toast = useToast()
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get('plan')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (isPaidPlan(wanted)) setPlan(wanted)
+  }, [])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -38,7 +49,10 @@ export default function SignupPage() {
     // With email confirmation switched on, sign-up returns no session: the account only
     // works once the link is opened. Say that, instead of bouncing to a login that fails.
     if (!data.session) setSent(true)
-    else router.push('/dashboard')
+    else if (plan) {
+      toast(`Your account is ready. Choose ${PLANS[plan].name} below to finish.`, { icon: 'sparkles' })
+      router.push('/settings/billing')
+    } else router.push('/dashboard')
   }
 
   if (sent) {
@@ -58,7 +72,7 @@ export default function SignupPage() {
     <AuthLayout variant="signup">
       <div className="auth-heading">
         <h1>Plant your first site</h1>
-        <p>Free forever, no card required. You&apos;ll be counting visits in about a minute.</p>
+        <p>{plan ? `First your free account, then ${PLANS[plan].name} on the next screen.` : <>Free forever, no card required. You&apos;ll be counting pageviews in about a minute.</>}</p>
       </div>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <div className="field">

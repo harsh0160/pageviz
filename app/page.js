@@ -2,7 +2,6 @@ import Link from 'next/link'
 import MarketingHeader from './_components/MarketingHeader'
 import Footer from './_components/Footer'
 import Icon from './_components/Icon'
-import SignedInRedirect from './_components/SignedInRedirect'
 import { ChartCard } from './_components/ui'
 import { HERO_PREVIEW } from '@/lib/demo-store'
 
@@ -23,7 +22,7 @@ const FEATURES = [
 
 const STEPS = [
   ['Plant one line', 'Drop a single lightweight script into your site. That is the whole setup. Really.'],
-  ['Let it grow', 'Pageviz starts counting visits gently in the background, cookie-free and kind to your visitors.'],
+  ['Let it grow', 'Pageviz starts counting pageviews gently in the background, cookie-free and kind to your visitors.'],
   ['Watch it bloom', 'Come back whenever you like to a calm, readable picture of how your corner of the web is doing.'],
 ]
 
@@ -49,7 +48,6 @@ function HeroPanel() {
 export default function Home() {
   return (
     <>
-      <SignedInRedirect />
       <MarketingHeader active="product" />
       <main id="main-content">
         <section className="hero">
@@ -130,7 +128,7 @@ export default function Home() {
                 <div className="stat-tile"><strong>~2 KB</strong><span>Script size, so pages stay quick.</span></div>
                 <div className="stat-tile"><strong>0</strong><span>Cookies set, banners needed, or dark patterns.</span></div>
                 <div className="stat-tile"><strong>1 min</strong><span>To go from sign up to your first pageview.</span></div>
-                <div className="stat-tile stat-tile-accent"><strong>100%</strong><span>Yours. Export your data whenever you like.</span></div>
+                <div className="stat-tile stat-tile-accent"><strong>100%</strong><span>Yours. Export it any time on Pro and Max.</span></div>
               </div>
             </div>
           </div>

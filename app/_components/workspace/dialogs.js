@@ -90,7 +90,7 @@ export function SetupDialog({ siteId }) {
       <ol className="install-steps">
         <li><div><strong>Copy the snippet below</strong><p>One small script, about 2 KB.</p></div></li>
         <li><div><strong>Paste it into your HTML</strong><p>Just before the closing &lt;/head&gt; tag, on every page.</p></div></li>
-        <li><div><strong>Publish and wait a beat</strong><p>Your first visit will appear within seconds.</p></div></li>
+        <li><div><strong>Publish and wait a beat</strong><p>Your first pageview will appear within seconds.</p></div></li>
       </ol>
       <div className="code-box">
         <pre>{snippet}</pre>
@@ -252,7 +252,7 @@ export function WorkspaceDialog() {
       <div className="menu-list">
         <div className="workspace-current">
           <span className="workspace-avatar">{ws.user.initial}</span>
-          <span><strong>Your workspace</strong><small>Personal · {ws.plan.name} plan</small></span>
+          <span><strong>Your workspace</strong><small>Personal · {ws.plan.name} plan</small><small>{ws.user.email}</small></span>
           <Icon name="check" />
         </div>
         {/* Multiple workspaces need a workspaces table + workspace_id on sites — not built yet. */}
@@ -260,11 +260,9 @@ export function WorkspaceDialog() {
           <Icon name="plus" /><span><strong>New workspace</strong><small>Group sites for a team or client</small></span><SoonBadge />
         </button>
       </div>
+      {/* Log out lives in Settings > Account. */}
       <div className="dialog-footer">
         <Link className="button button-secondary" href={ws.paths.account} onClick={ws.closeDialog}><Icon name="user" />Account</Link>
-        {ws.isDemo
-          ? <Link className="button button-secondary" href="/" onClick={ws.closeDialog}><Icon name="log-out" />Log out</Link>
-          : <button type="button" className="button button-secondary" onClick={() => { ws.closeDialog(); ws.actions.logout() }}><Icon name="log-out" />Log out</button>}
       </div>
     </>
   )
@@ -307,6 +305,47 @@ export function ChangePasswordDialog() {
 const CELEBRATIONS = { pro: 'Welcome to Pro. Room to grow!', business: 'Welcome to Max. The whole garden is yours!', free: 'Back on the free plan.' }
 
 // Demo only: switches the sample workspace's plan (no payment anywhere).
+// Sidebar "Share feedback": the real workspace emails it to the owner; the demo sends nothing.
+export function FeedbackDialog() {
+  const ws = useWorkspace()
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
+  const send = async (event) => {
+    event.preventDefault()
+    if (!message.trim()) return
+    if (ws.isDemo) {
+      ws.closeDialog()
+      ws.toast(`This is the demo, so nothing was sent. Write to us at ${CONTACT_EMAIL}.`, { icon: 'mail' })
+      return
+    }
+    setSending(true)
+    setError(null)
+    const failure = await ws.actions.sendFeedback(message.trim())
+    setSending(false)
+    if (failure) { setError(`${failure} You can also write to us at ${CONTACT_EMAIL}.`); return }
+    ws.closeDialog()
+    ws.toast('Thank you! We read every message.', { icon: 'heart' })
+  }
+  return (
+    <>
+      <DialogHeader title="Share feedback" subtitle="What's working, what isn't, what you'd like next. It goes straight to the people who build Pageviz." />
+      <form onSubmit={send}>
+        <div className="field">
+          <label htmlFor="feedback-message">Your message</label>
+          <textarea className="input feedback-input" id="feedback-message" rows={5} maxLength={2000} placeholder="I'd love it if Pageviz could…" value={message} onChange={(event) => setMessage(event.target.value)} required />
+          <small>We reply to {ws.user?.email || 'your email'} if you ask something.</small>
+        </div>
+        {error && <div className="form-message error">{error}</div>}
+        <div className="dialog-footer">
+          <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Cancel</button>
+          <button type="submit" className="button button-primary" disabled={!message.trim() || sending}>{sending ? 'Sending…' : <>Send <Icon name="arrow-right" /></>}</button>
+        </div>
+      </form>
+    </>
+  )
+}
+
 // "12.34 USD" style amounts from Paddle arrive as smallest-unit strings ("1234").
 function formatMoney(amount, currency) {
   const format = new Intl.NumberFormat(undefined, { style: 'currency', currency })

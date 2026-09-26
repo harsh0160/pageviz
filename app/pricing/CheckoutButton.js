@@ -41,7 +41,8 @@ export default function CheckoutButton({ plan, className, children, discountCode
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      router.push('/login?signup=1')
+      // Remember the plan they picked, so sign-up can take them straight on to pay for it.
+      router.push(`/signup?plan=${plan}`)
       return
     }
 

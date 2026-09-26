@@ -30,7 +30,7 @@ async function fetchShareData(siteId, password) {
 }
 
 // The design shows the last 30 days; a Free owner's link only holds 7 days of data.
-function buildStats(pageviews, retentionDays) {
+function buildStats(pageviews, retentionDays, siteDomain) {
   const range = retentionDays !== null && retentionDays < 30 ? '7' : '30'
   const period = rangeWindow(range)
   const current = pageviews.filter((pv) => new Date(pv.created_at) >= period.start)
@@ -43,7 +43,7 @@ function buildStats(pageviews, retentionDays) {
     growth: previous === null ? null : growthPercent(current.length, previous),
     topPage: pages[0] ? { name: pages[0].name, share: pages[0].count / current.length * 100 } : null,
     pages,
-    referrers: countBy(current, (pv) => referrerName(pv.referrer)),
+    referrers: countBy(current, (pv) => referrerName(pv.referrer, siteDomain)),
     chart: { labels: period.buckets.map((bucket) => bucket.label), values: bucketCounts(current, period.buckets), previous: null },
   }
 }
@@ -54,7 +54,7 @@ export default function PublicShare() {
   const [live, setLive] = useState(null)
 
   const accept = (data) => {
-    const stats = buildStats(data.pageviews || [], data.retentionDays)
+    const stats = buildStats(data.pageviews || [], data.retentionDays, data.site?.domain)
     setResult({ status: 'ready', site: { ...data.site, domain: cleanDomain(data.site.domain), monogram: monogramFor(data.site.name), color: 'forest' }, stats, retentionDays: data.retentionDays })
   }
   usePageTitle(result.status === 'ready' ? `${result.site.name} — Shared stats` : result.status === 'not-shared' ? 'Not shared — Pageviz' : null)

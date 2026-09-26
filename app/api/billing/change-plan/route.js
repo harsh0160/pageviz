@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { PLAN_TO_PRICE } from '@/lib/paddle-prices'
 import { PLAN_ORDER, isPaidPlan } from '@/lib/plans'
 import { alertOwner } from '@/lib/alert'
+import { paddleApi } from '@/lib/paddle-api'
 
 // Moves an existing subscriber to a bigger plan (Pro -> Max) on the SAME Paddle
 // subscription. Opening a new checkout instead would start a second subscription,
@@ -16,18 +17,15 @@ import { alertOwner } from '@/lib/alert'
 // The plan in our database is NOT written here. Paddle sends subscription.updated to
 // /api/webhook/paddle, which stays the only place a plan is granted.
 //
-// Needs PADDLE_API_KEY in Netlify (server only). A key starting pdl_sdbx_ is a sandbox key.
+// Needs PADDLE_API_KEY in Netlify (server only), see lib/paddle-api.js.
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-const paddleBase = (key) => (key.startsWith('pdl_sdbx_') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com')
-
 export async function POST(req) {
-  const apiKey = process.env.PADDLE_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'Plan changes are not set up yet.' }, { status: 503 })
+  if (!process.env.PADDLE_API_KEY) return NextResponse.json({ error: 'Plan changes are not set up yet.' }, { status: 503 })
 
   let body
   try {
@@ -60,27 +58,25 @@ export async function POST(req) {
   }
 
   const subscriptionId = profile.paddle_subscription_id
-  const response = await fetch(`${paddleBase(apiKey)}/subscriptions/${encodeURIComponent(subscriptionId)}${preview ? '/preview' : ''}`, {
+  const result = await paddleApi(`/subscriptions/${encodeURIComponent(subscriptionId)}${preview ? '/preview' : ''}`, {
     method: 'PATCH',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body: {
       items: [{ price_id: PLAN_TO_PRICE[target], quantity: 1 }],
       proration_billing_mode: 'prorated_immediately',
       on_payment_failure: 'prevent_change',
-    }),
-  }).catch(() => null)
-  const result = response ? await response.json().catch(() => null) : null
+    },
+  })
 
-  if (!response?.ok) {
-    const paddleError = result?.error || null
-    console.error('Paddle plan change failed', response?.status, paddleError)
+  if (!result.ok) {
+    const paddleError = result.error
+    console.error('Paddle plan change failed', result.status, paddleError)
     // A customer tried to pay us more and could not -- the owner should hear about it.
     if (!preview) {
       await alertOwner('an upgrade did not go through', {
         user_id: auth.user.id,
         subscription_id: subscriptionId,
         target,
-        status: response?.status || 'no response',
+        status: result.status || 'no response',
         paddle_code: paddleError?.code,
         paddle_detail: paddleError?.detail,
       })
@@ -92,10 +88,10 @@ export async function POST(req) {
 
   // What Paddle will charge today: the rest of this period on the new plan, minus what is
   // left of the old one. Amounts come as strings in the smallest unit (cents for USD).
-  const totals = result?.data?.immediate_transaction?.details?.totals
+  const totals = result.data?.immediate_transaction?.details?.totals
   return NextResponse.json({
     amount: totals?.total ?? null,
-    currency: totals?.currency_code || result?.data?.currency_code || null,
-    nextBilledAt: result?.data?.next_billed_at || null,
+    currency: totals?.currency_code || result.data?.currency_code || null,
+    nextBilledAt: result.data?.next_billed_at || null,
   })
 }

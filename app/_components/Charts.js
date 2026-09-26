@@ -8,7 +8,7 @@ import { compactNumber, formatNumber } from '@/lib/analytics'
 // y axis begins at zero, gradient fill 32% → 2%, no points until hover.
 // Colours are read from the CSS tokens so both themes stay in step.
 
-const TOKENS = ['--chart-green', '--chart-fill', '--chart-second', '--chart-third', '--sage', '--border', '--muted', '--surface']
+const TOKENS = ['--chart-green', '--chart-fill', '--chart-second', '--chart-third', '--sage', '--border', '--border-strong', '--muted', '--surface']
 
 function readTokens() {
   const styles = getComputedStyle(document.documentElement)
@@ -36,13 +36,27 @@ function ChartTooltip({ active, payload, label, unit }) {
       <div className="chart-tooltip-title">{label}</div>
       {payload.map((item) => (
         <div key={item.dataKey} className="chart-tooltip-row">
-          <span className="chart-tooltip-dot" style={{ background: item.color }} />
-          <span>{item.name}: {formatNumber(item.value)}{unit}</span>
+          {/* The previous period is drawn dashed, so its key is a ring rather than a filled dot. */}
+          <span className={`chart-tooltip-dot${item.dataKey === 'previous' ? ' ring' : ''}`} style={{ color: item.color }} />
+          <span className="chart-tooltip-label">{item.name}</span>
+          <span className="chart-tooltip-value">{formatNumber(item.value)}{unit && <small>{unit}</small>}</span>
         </div>
       ))}
     </div>
   )
 }
+
+// Shared by both charts: a faint dashed line marks the hovered day, and the box stays at
+// the top of the chart and glides sideways with the pointer instead of trailing it up and
+// down (recharts' default follows both ways, slowly, over 400ms).
+const tooltipProps = (tokens) => ({
+  cursor: { stroke: tokens['--border-strong'], strokeWidth: 1, strokeDasharray: '4 4' },
+  position: { y: 0 },
+  offset: 16,
+  animationDuration: 120,
+  animationEasing: 'ease-out',
+  wrapperStyle: { pointerEvents: 'none' },
+})
 
 const xInterval = (length) => Math.max(0, Math.ceil(length / 8) - 1)
 
@@ -58,7 +72,7 @@ export function TrafficChart({ labels = [], values = [], previous = null, compar
   return (
     <div role="img" aria-label={`${label}. Detailed counts are in the statistics and data tables.`} style={{ width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+        <ComposedChart data={data} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={tokens['--chart-fill']} stopOpacity={0.32} />
@@ -68,7 +82,7 @@ export function TrafficChart({ labels = [], values = [], previous = null, compar
           {!preview && <CartesianGrid vertical={false} stroke={tokens['--border']} />}
           <XAxis dataKey="name" hide={preview} axisLine={false} tickLine={false} tick={tickStyle(tokens)} tickMargin={8} interval={xInterval(data.length)} />
           <YAxis hide={preview} domain={[0, 'auto']} allowDecimals={false} axisLine={false} tickLine={false} tick={tickStyle(tokens)} tickCount={5} tickMargin={10} width={44} tickFormatter={compactNumber} />
-          {!preview && <Tooltip cursor={false} content={<ChartTooltip unit=" views" />} />}
+          {!preview && <Tooltip {...tooltipProps(tokens)} content={<ChartTooltip unit=" views" />} />}
           <Area
             type="monotone"
             dataKey="value"
@@ -105,7 +119,7 @@ export function CombinedChart({ labels = [], series = [] }) {
   return (
     <div role="img" aria-label="Combined site pageviews over time. Detailed counts are in the statistics and data tables." style={{ width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+        <ComposedChart data={data} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={tokens['--chart-fill']} stopOpacity={0.32} />
@@ -115,7 +129,7 @@ export function CombinedChart({ labels = [], series = [] }) {
           <CartesianGrid vertical={false} stroke={tokens['--border']} />
           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={tickStyle(tokens)} tickMargin={8} interval={xInterval(data.length)} />
           <YAxis domain={[0, 'auto']} allowDecimals={false} axisLine={false} tickLine={false} tick={tickStyle(tokens)} tickCount={5} tickMargin={10} width={44} tickFormatter={compactNumber} />
-          <Tooltip cursor={false} content={<ChartTooltip unit="" />} />
+          <Tooltip {...tooltipProps(tokens)} content={<ChartTooltip unit="" />} />
           {series.map((item, index) => {
             const color = palette[index % palette.length]
             return (

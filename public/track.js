@@ -16,6 +16,13 @@
   // Automated browsers (headless Chrome, test tools) are not real readers
   if (navigator.webdriver) return;
 
+  // A developer's own machine or a page opened from disk is not real traffic. pageviz()
+  // still exists there, so a site calling pageviz('signup') does not break while testing.
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === 'file:') {
+    window.pageviz = function() {};
+    return;
+  }
+
   const origin = new URL(script.src).origin;
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
@@ -24,11 +31,22 @@
   // dirty every site's data, so this is opt-in: add data-hash="1" to the script tag.
   const useHash = script.getAttribute('data-hash') === '1';
 
+  // Opt-in: data-exclude="/dashboard,/admin" never counts those paths or anything under
+  // them. Needed where a single-page app moves from public pages into a private area
+  // without a reload, so this script is still running there (Pageviz's own site does).
+  const excluded = (script.getAttribute('data-exclude') || '').split(',')
+    .map(function(prefix) { return prefix.trim().replace(/\/+$/, ''); }).filter(Boolean);
+  function isExcluded() {
+    const path = window.location.pathname;
+    return excluded.some(function(prefix) { return path === prefix || path.indexOf(prefix + '/') === 0; });
+  }
+
   let lastPath = null;
   function trackPageview(referrer) {
     const path = window.location.pathname + (useHash ? window.location.hash : '');
     if (path === lastPath) return; // same page again (only ?query, or a #hash we ignore, changed)
     lastPath = path;
+    if (isExcluded()) return;
     fetch(origin + '/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,7 +59,25 @@
       keepalive: true,
     });
   }
-  trackPageview(document.referrer || null);
+  // Arriving from another page of the same site is not a source: on a multi-page site it
+  // would put the site's own domain at the top of "where they came from".
+  function outsideReferrer() {
+    const ref = document.referrer;
+    if (!ref) return null;
+    try {
+      const host = function(name) { return name.replace(/^www\./, ''); };
+      if (host(new URL(ref).hostname) === host(location.hostname)) return null;
+    } catch (e) {}
+    return ref;
+  }
+
+  // A browser can load a page ahead of time in case it is opened next (prerender).
+  // Count it only once it is actually shown.
+  if (document.prerendering) {
+    document.addEventListener('prerenderingchange', function() { trackPageview(outsideReferrer()); }, { once: true });
+  } else {
+    trackPageview(outsideReferrer());
+  }
 
   // Single-page apps (React, Vue, Next.js...) change the URL without reloading the
   // page, so also count those moves. In-app moves have no outside referrer.
@@ -96,7 +132,7 @@
       const visitorRef = Math.random().toString(36).slice(2) + Date.now().toString(36);
       let lastBeat = 0;
       const beat = function() {
-        if (document.visibilityState === 'hidden') return;
+        if (document.visibilityState === 'hidden' || isExcluded()) return;
         // Switching tabs quickly should not turn into a burst of pings.
         if (Date.now() - lastBeat < 10000) return;
         lastBeat = Date.now();
