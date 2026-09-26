@@ -7,7 +7,7 @@ import CheckoutButton from '../../pricing/CheckoutButton'
 import { useSoon } from '../Toast'
 import { EmptyIcon, SoonBadge } from '../ui'
 import { useThemePreference } from '@/lib/theme'
-import { CONTACT_EMAIL, PLANS, PLAN_ORDER } from '@/lib/plans'
+import { CONTACT_EMAIL, PLANS, PLAN_ORDER, isPaidPlan } from '@/lib/plans'
 import { formatNumber } from '@/lib/analytics'
 import AppShell from './AppShell'
 import { useWorkspace } from './context'
@@ -181,6 +181,8 @@ export function BillingView() {
   const { plan, planKey, isPaid } = ws
   const usage = ws.sites.length
   const rank = (key) => PLAN_ORDER.indexOf(key)
+  // True once the database marks sites as within the plan or not (see lib/workspace-queries.js).
+  const lockReady = ws.sites.length === 0 || ws.sites.some((site) => site.lockKnown)
 
   // Paddle hosts cancelling and card updates on its own pages and gives us the links
   // per subscription. They only exist after a subscription webhook has arrived, so
@@ -196,12 +198,17 @@ export function BillingView() {
   const planAction = (key) => {
     const item = PLANS[key]
     if (ws.isDemo) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<PlanPreviewDialog plan={key} />)}>Switch to {item.name}</button>
-    // A paying customer moves up on the subscription they already have; a new checkout
+    const switchButton = (onClick) => <button type="button" className="button button-secondary button-small" onClick={onClick}>Switch to {item.name}</button>
+    // A paying customer changes plan on the subscription they already have; a new checkout
     // would start a second one and bill them twice.
-    if (rank(key) > rank(planKey) && isPaid) return <button type="button" className="button button-secondary button-small" onClick={() => ws.openDialog(<ChangePlanDialog plan={key} />)}>Switch to {item.name}</button>
+    if (rank(key) > rank(planKey) && isPaid) return switchButton(() => ws.openDialog(<ChangePlanDialog plan={key} />))
     if (rank(key) > rank(planKey)) return <CheckoutButton plan={key} className="button button-secondary button-small">Switch to {item.name}</CheckoutButton>
-    // TODO: not wired yet — downgrades. Needs Paddle subscription update/cancel (API or customer portal link) — a new checkout would double-bill.
-    return <button type="button" className="button button-secondary button-small" onClick={soon}>Switch to {item.name}</button>
+    // Moving down between paid plans needs the database's downgrade lock (lockReady), or the
+    // sites past the smaller plan's limit would stay visible for less money.
+    if (isPaidPlan(key) && lockReady) return switchButton(() => ws.openDialog(<ChangePlanDialog plan={key} />))
+    // Down to Free is cancelling, which Paddle hosts.
+    if (key === 'free' && cancelUrl) return <a className="button button-secondary button-small" href={cancelUrl} target="_blank" rel="noreferrer">Switch to {item.name}</a>
+    return switchButton(soon)
   }
 
   return (

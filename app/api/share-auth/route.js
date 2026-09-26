@@ -51,15 +51,21 @@ export async function POST(req) {
   const { siteId, password } = await req.json()
   if (!siteId) return NextResponse.json({ error: 'Missing siteId' }, { status: 400 })
 
-  const { data: site, error } = await supabaseAdmin
+  // '*' rather than a column list, so this keeps working whether or not the downgrade
+  // lock's within_plan column exists yet. Only the fields below ever leave this route.
+  const { data: row, error } = await supabaseAdmin
     .from('sites')
-    .select('id, name, domain, public_enabled, share_password, user_id')
+    .select('*')
     .eq('id', siteId)
     .maybeSingle()
 
-  if (error || !site || !site.public_enabled) {
+  // A site locked by a downgrade is hidden from its owner, so its public page is too:
+  // this key skips the database's lock, so the check has to live here.
+  if (error || !row || !row.public_enabled || row.within_plan === false) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
+
+  const site = { id: row.id, name: row.name, domain: row.domain, public_enabled: row.public_enabled, share_password: row.share_password, user_id: row.user_id }
 
   if (site.share_password && !passwordMatches(site.share_password, password)) {
     // That password is the only thing in front of a private page, so cap guessing:

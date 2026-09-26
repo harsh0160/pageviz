@@ -28,6 +28,8 @@
 .sidebar-link .badge-soon, .settings-tab .badge-soon { margin-left: auto; }
 .sidebar-site { padding: 8px 12px; font-weight: 500; }
 .sidebar-site span:not(.site-avatar) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-lock { margin-left: auto; display: inline-flex; color: var(--muted); }
+.sidebar-lock .icon { width: 13px; height: 13px; }
 .waiting-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warning); margin-left: auto; flex-shrink: 0; animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
 .sidebar-bottom { margin-top: auto; padding-top: 16px; }
@@ -157,6 +159,7 @@ a.stat-name:hover .icon:last-child { opacity: 1; }
 .setup-hero { text-align: center; padding: 40px 20px; }
 .setup-hero .site-avatar { margin: 0 auto 20px; }
 .setup-hero .page-title { margin-bottom: 12px; }
+.setup-hero .page-head-actions { justify-content: center; flex-wrap: wrap; margin-top: 22px; }
 .setup-hero .page-sub { max-width: 440px; margin: 0 auto 24px; }
 .setup-waiting { display: flex; align-items: center; gap: 16px; max-width: 460px; margin: 20px auto 0; padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
 .waiting-pulse { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 50%; background: var(--positive-bg); color: var(--positive); flex-shrink: 0; }

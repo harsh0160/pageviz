@@ -61,17 +61,19 @@ export default function RealWorkspace({ children }) {
   useEffect(() => {
     if (!accountId) return
     const params = new URLSearchParams(window.location.search)
-    // "1" comes back from a new checkout (any paid plan will do); a plan key comes from
-    // a Pro -> Max change, where the plan is already paid and must become that one.
-    const upgraded = params.get('upgraded')
-    if (upgraded !== '1' && !isPaidPlan(upgraded)) return
-    const arrived = (plan) => (upgraded === '1' ? plan !== 'free' : plan === upgraded)
+    // "upgraded=1" comes back from a new checkout (any paid plan will do); "upgraded=<plan>"
+    // from moving up on the same subscription, "changed=<plan>" from moving down. Both of
+    // those must end on exactly that plan.
+    const changed = params.get('changed')
+    const target = params.get('upgraded') || changed
+    if (target !== '1' && !isPaidPlan(target)) return
+    const arrived = (plan) => (target === '1' ? plan !== 'free' : plan === target)
     // Drop the flag immediately so a refresh doesn't start the wait all over again.
     window.history.replaceState({}, '', window.location.pathname)
 
     let cancelled = false
     let tries = 0
-    toast('Payment received. Activating your plan…', { icon: 'activity' })
+    toast(changed ? 'Changing your plan…' : 'Payment received. Activating your plan…', { icon: 'activity' })
     const timer = setInterval(async () => {
       tries += 1
       const profile = await loadProfile(accountId).catch(() => null)
@@ -81,12 +83,22 @@ export default function RealWorkspace({ children }) {
         const paidBits = { planKey: profile.plan, managementUrls: profile.managementUrls, nextBilledAt: profile.nextBilledAt }
         setAccount((prev) => (prev ? { ...prev, ...paidBits } : prev))
         if (cache?.account) cache.account = { ...cache.account, ...paidBits }
-        toast('Your plan is active. Thank you!', { celebration: true, icon: 'sprout' })
+        // The database re-decides which sites fit the new plan, so read the locks again.
+        const fresh = await loadSites(accountId).catch(() => null)
+        if (fresh && !cancelled) {
+          // A site that was locked read as having no pageviews, so its old "not tracking yet"
+          // flag means nothing now; null shows it normally.
+          setSites((current) => fresh.map((site) => {
+            const before = current.find((item) => item.id === site.id)
+            return { ...site, tracking: before && !before.locked ? before.tracking : null }
+          }))
+        }
+        toast(changed ? 'Your plan is changed.' : 'Your plan is active. Thank you!', { celebration: !changed, icon: changed ? 'check' : 'sprout' })
       } else if (tries >= 20) {
         // ~60s. The payment is Paddle's to keep either way, so say that plainly
         // rather than leaving them staring at a free plan they just paid to leave.
         clearInterval(timer)
-        toast('Payment received, but the plan is still updating. Refresh in a minute, or write to us.', { icon: 'mail' })
+        toast(changed ? 'Your plan is still updating. Refresh in a minute, or write to us.' : 'Payment received, but the plan is still updating. Refresh in a minute, or write to us.', { icon: 'mail' })
       }
     }, 3000)
     return () => { cancelled = true; clearInterval(timer) }
@@ -142,7 +154,7 @@ export default function RealWorkspace({ children }) {
   }, [toast])
 
   // First-visitor watch: the app's existing ActivationStatus poll (every 5s).
-  const waitingIds = sites.filter((site) => site.tracking === false).map((site) => site.id).join(',')
+  const waitingIds = sites.filter((site) => site.tracking === false && !site.locked).map((site) => site.id).join(',')
   useEffect(() => {
     if (!waitingIds) return
     const ids = waitingIds.split(',')

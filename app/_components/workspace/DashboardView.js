@@ -111,6 +111,18 @@ function SiteCard({ site, stats, loading }) {
   const ws = useWorkspace()
   const href = ws.paths.site(site.id)
 
+  if (site.locked) {
+    return (
+      <Link href={href} className="site-card site-card-waiting">
+        <div className="site-card-head"><SiteAvatar site={site} size="avatar-large" /><span className="badge badge-soft"><Icon name="lock" />Locked</span></div>
+        <h2>{site.name}</h2>
+        <span className="site-domain"><Icon name="globe" />{site.domain}</span>
+        <div className="site-card-waiting-body"><Icon name="lock" /><p>Past your {ws.plan.name} plan&apos;s site limit. Still counting, shown again when you move up.</p></div>
+        <span className="site-card-cta">See why <Icon name="arrow-right" /></span>
+      </Link>
+    )
+  }
+
   if (site.tracking === false) {
     return (
       <Link href={href} className="site-card site-card-waiting">

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Icon from '../Icon'
 import NotFoundContent from '../NotFoundContent'
-import { BackLink, ChartCard, GrowthBadge, LiveBadge, MetricCard, RangePicker, SiteAvatar, StatList } from '../ui'
+import { BackLink, ChartCard, EmptyIcon, GrowthBadge, LiveBadge, MetricCard, RangePicker, SiteAvatar, StatList } from '../ui'
 import { formatNumber } from '@/lib/analytics'
 import AppShell from './AppShell'
 import { useWorkspace, usePageTitle } from './context'
@@ -20,6 +20,25 @@ export default function SiteView({ siteId }) {
   if (!ws.ready) return <AppShell />
   if (!site) {
     return <AppShell active="" crumb="Not found"><NotFoundContent demoHref="/demo" /></AppShell>
+  }
+  // Past the plan's site limit after a downgrade: its rows are hidden by the database,
+  // so without this the page would look like a site that simply has no data.
+  if (site.locked) {
+    const { plan } = ws
+    return (
+      <AppShell active={site.id} crumb={site.name}>
+        <BackLink href={ws.paths.home}>All your sites</BackLink>
+        <div className="setup-hero">
+          <EmptyIcon name="lock" />
+          <h1 className="page-title">{site.name} is locked</h1>
+          <p className="page-sub">Your {plan.name} plan covers {plan.sites} {plan.sites === 1 ? 'site' : 'sites'}, and this one is past that. Pageviz is still counting it: move up a plan and every number comes back.</p>
+          <div className="page-head-actions">
+            <Link className="button button-primary" href={ws.paths.billing}>See plans <Icon name="arrow-right" /></Link>
+            <button type="button" className="button button-secondary" onClick={() => ws.openDialog(<RemoveSiteDialog siteId={site.id} />)}>Remove this site</button>
+          </div>
+        </div>
+      </AppShell>
+    )
   }
   if (site.tracking === false) {
     return <AppShell active={site.id} crumb={site.name}><SetupContent site={site} /></AppShell>

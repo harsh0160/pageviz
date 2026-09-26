@@ -5,15 +5,15 @@ import { PLAN_ORDER, isPaidPlan } from '@/lib/plans'
 import { alertOwner } from '@/lib/alert'
 import { paddleApi } from '@/lib/paddle-api'
 
-// Moves an existing subscriber to a bigger plan (Pro -> Max) on the SAME Paddle
+// Moves an existing subscriber between paid plans (Pro <-> Max) on the SAME Paddle
 // subscription. Opening a new checkout instead would start a second subscription,
 // and the customer would be billed for both.
 //
 // POST { plan, preview }
-//   preview: true  -> asks Paddle what the customer would pay today; nothing changes.
-//   preview: false -> makes the change. Paddle charges the difference for the rest of
-//                     this billing period straight away. If that payment fails, Paddle
-//                     keeps the old plan (prevent_change).
+//   preview: true  -> asks Paddle what today's charge (or credit) would be; nothing changes.
+//   preview: false -> makes the change, prorated: moving up charges the difference for the
+//                     rest of this period straight away (if that payment fails, Paddle
+//                     keeps the old plan); moving down leaves the unused part as credit.
 // The plan in our database is NOT written here. Paddle sends subscription.updated to
 // /api/webhook/paddle, which stays the only place a plan is granted.
 //
@@ -47,14 +47,23 @@ export async function POST(req) {
     .eq('id', auth.user.id)
     .maybeSingle()
 
-  // Only upgrades between paid plans come through here. Free -> paid is a normal checkout,
-  // and downgrades wait for the downgrade lock (see SESSION_HANDOFF.md, A0-NIGHT).
+  // Only moves between paid plans come through here. Free -> paid is a normal checkout,
+  // and paid -> Free is cancelling, on Paddle's own page.
   const current = profile?.plan || 'free'
   if (!isPaidPlan(current) || !profile?.paddle_subscription_id) {
     return NextResponse.json({ error: 'No active subscription to change.' }, { status: 409 })
   }
-  if (PLAN_ORDER.indexOf(target) <= PLAN_ORDER.indexOf(current)) {
-    return NextResponse.json({ error: 'That is not an upgrade.' }, { status: 409 })
+  if (target === current) return NextResponse.json({ error: 'You are already on that plan.' }, { status: 409 })
+
+  // Moving down is only offered once the database's downgrade lock exists (the
+  // sites.within_plan column): without it, the sites past the smaller plan's limit would
+  // stay fully visible on the cheaper plan.
+  const down = PLAN_ORDER.indexOf(target) < PLAN_ORDER.indexOf(current)
+  if (down) {
+    const { data: someSite } = await supabaseAdmin.from('sites').select('*').eq('user_id', auth.user.id).limit(1).maybeSingle()
+    if (someSite && !Object.prototype.hasOwnProperty.call(someSite, 'within_plan')) {
+      return NextResponse.json({ error: 'Moving down a plan is not available yet.' }, { status: 409 })
+    }
   }
 
   const subscriptionId = profile.paddle_subscription_id
@@ -70,9 +79,9 @@ export async function POST(req) {
   if (!result.ok) {
     const paddleError = result.error
     console.error('Paddle plan change failed', result.status, paddleError)
-    // A customer tried to pay us more and could not -- the owner should hear about it.
+    // A plan change a customer asked for did not happen -- the owner should hear about it.
     if (!preview) {
-      await alertOwner('an upgrade did not go through', {
+      await alertOwner(down ? 'a plan downgrade did not go through' : 'an upgrade did not go through', {
         user_id: auth.user.id,
         subscription_id: subscriptionId,
         target,
@@ -86,12 +95,16 @@ export async function POST(req) {
 
   if (!preview) return NextResponse.json({ ok: true })
 
-  // What Paddle will charge today: the rest of this period on the new plan, minus what is
-  // left of the old one. Amounts come as strings in the smallest unit (cents for USD).
+  // Today's effect: the rest of this period on the new plan against what is left of the
+  // old one. Moving up that is a charge (the immediate transaction, tax included); moving
+  // down it is a credit (update_summary). Amounts are strings in the smallest unit.
   const totals = result.data?.immediate_transaction?.details?.totals
+  const summary = result.data?.update_summary?.result
+  const credit = down || summary?.action === 'credit'
   return NextResponse.json({
-    amount: totals?.total ?? null,
-    currency: totals?.currency_code || result.data?.currency_code || null,
+    action: credit ? 'credit' : 'charge',
+    amount: credit ? (summary?.amount ?? null) : (totals?.total ?? summary?.amount ?? null),
+    currency: (credit ? summary?.currency_code : totals?.currency_code) || result.data?.currency_code || null,
     nextBilledAt: result.data?.next_billed_at || null,
   })
 }

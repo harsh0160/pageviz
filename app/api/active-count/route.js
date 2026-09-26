@@ -19,11 +19,12 @@ export async function GET(req) {
   // this cannot be used to find out which site ids exist.
   const { data: site } = await supabaseAdmin
     .from('sites')
-    .select('user_id, public_enabled')
+    .select('*') // '*' so a missing within_plan column (lock not set up yet) is not an error
     .eq('id', siteId)
     .maybeSingle()
 
-  if (!site) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  // Downgrade lock: this key skips the database's lock, so honour it here.
+  if (!site || site.within_plan === false) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   if (!site.public_enabled) {
     const token = (req.headers.get('authorization') || '').replace(/^Bearer /, '')

@@ -352,11 +352,15 @@ function formatMoney(amount, currency) {
   return format.format(Number(amount) / 10 ** format.resolvedOptions().maximumFractionDigits)
 }
 
-// Real workspace only: a Pro subscriber moving up to Max. Shows what Paddle will charge
-// today before anything changes, then updates the same subscription.
+// Real workspace only: a subscriber moving between Pro and Max. Shows what Paddle will
+// charge (moving up) or credit (moving down) today before anything changes, then updates
+// the same subscription.
 export function ChangePlanDialog({ plan }) {
   const ws = useWorkspace()
   const item = PLANS[plan]
+  const down = item.price < ws.plan.price
+  // Moving down locks the newest sites past the smaller plan's limit (the database does it).
+  const lockedCount = down ? Math.max(0, ws.sites.length - item.sites) : 0
   const [quote, setQuote] = useState(null)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -381,22 +385,28 @@ export function ChangePlanDialog({ plan }) {
     }
     // A full load, so the workspace waits for Paddle's webhook to confirm the new plan.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    window.location.assign(`${window.location.origin}${ws.paths.billing}?upgraded=${plan}`)
+    window.location.assign(`${window.location.origin}${ws.paths.billing}?${down ? 'changed' : 'upgraded'}=${plan}`)
   }
 
-  const today = quote ? formatMoney(quote.amount, quote.currency) : null
+  const money = quote ? formatMoney(quote.amount, quote.currency) : null
+  const from = quote?.nextBilledAt ? new Date(quote.nextBilledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : null
+  const then = from ? `, then $${item.price} a month from ${from}` : ''
   return (
     <>
-      <DialogHeader title={`Move up to ${item.name}`} subtitle="Your current subscription is changed. You won't be billed twice." />
+      <DialogHeader title={down ? `Move to ${item.name}` : `Move up to ${item.name}`} subtitle="Your current subscription is changed. You won't be billed twice." />
       <div className="plan-preview">
         <div className="plan-preview-price"><strong>${item.price}</strong><span>/month</span></div>
         {!quote && !error && <p className="muted">Checking the price with Paddle…</p>}
-        {quote && <p className="muted">You pay <strong>{today}</strong> today for the rest of this billing period{quote.nextBilledAt ? `, then $${item.price} a month from ${new Date(quote.nextBilledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}.</p>}
+        {quote && quote.action === 'credit' && <p className="muted">The unused part of this period, <strong>{money}</strong>, stays with you as credit for future payments{then}.</p>}
+        {quote && quote.action !== 'credit' && <p className="muted">You pay <strong>{money}</strong> today for the rest of this billing period{then}.</p>}
+        {lockedCount > 0 && <div className="inline-note"><Icon name="lock" /><span>{item.name} covers {item.sites} sites, so your {lockedCount} newest {lockedCount === 1 ? 'site' : 'sites'} will be locked. They keep counting, and open again when you move back up.</span></div>}
         {error && <div className="form-message error">{error} If it keeps happening, write to us at {CONTACT_EMAIL}.</div>}
       </div>
       <div className="dialog-footer">
         <button type="button" className="button button-secondary" onClick={ws.closeDialog}>Not now</button>
-        <button type="button" className="button button-primary" disabled={!quote || saving} onClick={confirm}>{saving ? 'Upgrading…' : today ? `Pay ${today} and upgrade` : `Upgrade to ${item.name}`}</button>
+        <button type="button" className="button button-primary" disabled={!quote || saving} onClick={confirm}>
+          {saving ? 'Changing…' : down ? `Move to ${item.name}` : money ? `Pay ${money} and upgrade` : `Upgrade to ${item.name}`}
+        </button>
       </div>
     </>
   )
