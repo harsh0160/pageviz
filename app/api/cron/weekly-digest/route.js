@@ -16,7 +16,7 @@ import { PUBLIC_ORIGIN } from '@/lib/plans'
 //      to Netlify env vars
 //   4. Point an external cron (UptimeRobot monitor, weekly interval, or
 //      cron-job.org) at:
-//      POST https://pageviz.netlify.app/api/cron/weekly-digest?secret=YOUR_CRON_SECRET
+//      POST https://getpageviz.com/api/cron/weekly-digest?secret=YOUR_CRON_SECRET
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
